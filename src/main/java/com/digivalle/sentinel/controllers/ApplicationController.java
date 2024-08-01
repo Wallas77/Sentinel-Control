@@ -1,0 +1,216 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.digivalle.sentinel.controllers;
+
+import javax.validation.Valid;
+import com.digivalle.sentinel.Definitions;
+import com.digivalle.sentinel.containers.PagedResponse;
+import com.digivalle.sentinel.containers.Paging;
+import com.digivalle.sentinel.exceptions.BadRequestException;
+import com.digivalle.sentinel.exceptions.BusinessLogicException;
+import com.digivalle.sentinel.exceptions.EntityNotExistentException;
+import com.digivalle.sentinel.exceptions.ExistentEntityException;
+import com.digivalle.sentinel.exceptions.NoAccessGrantedException;
+import com.digivalle.sentinel.exceptions.handler.model.ErrorDetails;
+import com.digivalle.sentinel.models.Application;
+import com.digivalle.sentinel.models.ApplicationLog;
+import com.digivalle.sentinel.services.ApplicationLogService;
+import com.digivalle.sentinel.services.ApplicationService;
+import com.digivalle.sentinel.services.SecurityService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ *
+ * @author Waldir.Valle
+ */
+@RestController
+@RequestMapping("application")
+
+public class ApplicationController {
+    
+    @Autowired
+    private ApplicationService applicationService;
+    
+    @Autowired
+    private ApplicationLogService applicationLogService;
+    
+    @Autowired
+    private SecurityService securityService;
+    
+    
+    
+    @Operation(summary = "Search Application by Application Attributes", description = "This service retrieve Application information filter by Application Attributes", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/search", method = RequestMethod.POST)
+    ResponseEntity<PagedResponse<Application>> getApplication(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+            @RequestBody(required = true) @Parameter(description="Application object - json") Application application,
+        @RequestParam(value = "page", required = false, defaultValue = "0") @Parameter(description="Page to retrieve") Integer page,
+        @RequestParam(value = "pageSize", required = false, defaultValue = "10")  @Parameter(description="Page size to retrieve") Integer pageSize) throws BadRequestException, EntityNotExistentException, NoAccessGrantedException  {
+        try {
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            }
+            Paging paging = new Paging(page, pageSize);
+            return new ResponseEntity<>(applicationService.getApplication(application,paging), HttpStatus.OK);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        }
+    }
+    
+    @Operation(summary = "Search Application by Application Id", description = "This service retrieve Application information filter by Application Id", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public Application getById(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+                                                     @PathVariable(value = "id") @Parameter(description="Application Id - UUID") UUID applicationId) throws EntityNotExistentException, BadRequestException, NoAccessGrantedException  {
+       
+        try{
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            }
+            return applicationService.getById(applicationId);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        } 
+        
+    }
+    
+    @Operation(summary = "Create Application", description = "This service create a new Application Object", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(method = RequestMethod.POST)
+    public ResponseEntity<Application> createApplication(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+            @Valid @RequestBody(required = true) @Parameter(description="Application object - json") Application application) throws BusinessLogicException, ExistentEntityException, BadRequestException, EntityNotExistentException, NoAccessGrantedException {
+        try{
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_CREATE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
+            }
+            if(application.getUpdateUser()==null){
+                application.setUpdateUser(securityService.getUserByToken(token).getName());
+            }
+            return new ResponseEntity<>(applicationService.createApplication(application), HttpStatus.CREATED);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        } 
+        
+    }
+    
+    @Operation(summary = "Update Application", description = "This service updates a persited Application Object", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
+    public ResponseEntity<Application> updateApplication(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+                                                 @PathVariable(value = "id") @Parameter(description="Application Id - UUID") UUID applicationId,
+                                                 @Valid @RequestBody(required = true) @Parameter(description="Application object - json") Application application, BindingResult bindingResult) throws BusinessLogicException, BadRequestException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
+        try{
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_UPDATE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
+            }
+            if(application.getUpdateUser()==null){
+                application.setUpdateUser(securityService.getUserByToken(token).getName());
+            }
+            return new ResponseEntity<>(applicationService.updateApplication(applicationId, application), HttpStatus.OK);
+        }catch (Exception ble) {
+            throw new BadRequestException(ble.getMessage());
+            //throw ble;
+        }
+        
+ 
+    }
+    
+    @Operation(summary = "Delete Application", description = "This service deletes (Logically) a persited Application Object", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "202", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
+    public ResponseEntity<Boolean> deleteApplication(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+                                                 @PathVariable(value = "id") @Parameter(description="Application Id - UUID") UUID applicationId,
+                                                 @RequestParam(value = "updateUser") @Parameter(description="name of update User") String updateUser) throws Exception, BusinessLogicException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
+        try{
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_DELETE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
+            }
+            if(updateUser==null){
+                updateUser = securityService.getUserByToken(token).getName();
+            }
+            applicationService.deleteApplication(applicationId,updateUser);
+            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+        } catch (RuntimeException ex){
+            throw new BadRequestException(ex.getMessage());
+        } 
+    }
+    
+    @Operation(summary = "Search ApplicationLog by ApplicationLog Attributes", description = "This service retrieve ApplicationLog information filter by Application Attributes", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/log/search", method = RequestMethod.POST)
+    ResponseEntity<PagedResponse<ApplicationLog>> getApplicationLog(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+        @RequestBody(required = true) @Parameter(description="ApplicationLog object - json") ApplicationLog applicationLog,
+        @RequestParam(value = "page", required = false, defaultValue = "0") @Parameter(description="Page to retrieve") Integer page,
+        @RequestParam(value = "pageSize", required = false, defaultValue = "10") @Parameter(description="Page size to retrieve") Integer pageSize) throws BadRequestException, EntityNotExistentException, NoAccessGrantedException  {
+        try {
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            }
+            Paging paging = new Paging(page, pageSize);
+            return new ResponseEntity<>(applicationLogService.getApplicationLog(applicationLog,paging), HttpStatus.OK);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        }
+    }
+    
+    @Operation(summary = "Search ApplicationLog by ApplicationLog Id", description = "This service retrieve ApplicationLog information filter by ApplicationLog Id", tags = { "application" })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "successful operation", content = @Content(array = @ArraySchema(schema = @Schema(implementation = Application.class)))),
+        @ApiResponse(responseCode = "400", description = "bad request", content = @Content(array = @ArraySchema(schema = @Schema(implementation = ErrorDetails.class))))
+    })
+    @RequestMapping(value = "/log/{id}", method = RequestMethod.GET)
+    public ApplicationLog getLogById(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
+                                                     @PathVariable(value = "id") @Parameter(description="Application Id - UUID") UUID applicationLogId) throws Exception, EntityNotExistentException, NoAccessGrantedException {
+        try {
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            }
+            return applicationLogService.getById(applicationLogId);
+        } catch (Exception ex) {
+            throw new BadRequestException(ex.getMessage());
+        }  
+    }
+
+    
+    
+}
