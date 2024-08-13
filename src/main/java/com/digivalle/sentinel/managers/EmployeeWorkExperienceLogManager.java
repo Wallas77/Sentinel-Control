@@ -12,13 +12,13 @@ import com.digivalle.sentinel.containers.PagedResponse;
 import com.digivalle.sentinel.containers.Paging;
 import com.digivalle.sentinel.exceptions.BusinessLogicException;
 import com.digivalle.sentinel.exceptions.EntityNotExistentException;
-import com.digivalle.sentinel.exceptions.ExistentEntityException;
 import com.digivalle.sentinel.models.EmployeeWorkExperienceLog;
 import com.digivalle.sentinel.repositories.EmployeeWorkExperienceLogRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -56,22 +56,46 @@ public class EmployeeWorkExperienceLogManager {
     }
     
     public PagedResponse<EmployeeWorkExperienceLog> getEmployeeWorkExperienceLog(EmployeeWorkExperienceLog filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<EmployeeWorkExperienceLog> cq = cb.createQuery(EmployeeWorkExperienceLog.class);
         Root<EmployeeWorkExperienceLog> root = cq.from(EmployeeWorkExperienceLog.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<EmployeeWorkExperienceLog> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<EmployeeWorkExperienceLog> result = query.getResultList();
+        
+        Page<EmployeeWorkExperienceLog> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(EmployeeWorkExperienceLog filter, CriteriaBuilder cb, Root<EmployeeWorkExperienceLog> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
-            cq.orderBy(cb.desc(root.get("updateDate")));
         }
         if(filter.getCompany()!=null){
             predicates.add(cb.like(cb.lower(root.get("company")), "%" + filter.getCompany().toLowerCase()+ "%"));
@@ -98,11 +122,9 @@ public class EmployeeWorkExperienceLogManager {
         }
         if(filter.getEndDate()!=null && filter.getEndDate2()!=null){
             predicates.add(cb.between(root.get("endDate"), filter.getEndDate(),filter.getEndDate2()));
-            cq.orderBy(cb.desc(root.get("endDate")));
         }
         if(filter.getStartDate()!=null && filter.getStartDate2()!=null){
             predicates.add(cb.between(root.get("startDate"), filter.getStartDate(),filter.getStartDate2()));
-            cq.orderBy(cb.desc(root.get("startDate")));
         }
         if(filter.getActive()!=null){
             predicates.add(cb.equal(root.get("active"), filter.getActive()));
@@ -122,27 +144,41 @@ public class EmployeeWorkExperienceLogManager {
         if(filter.getAction()!=null){
             predicates.add(cb.equal(root.get("action"), filter.getAction()));
         }
-        
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<EmployeeWorkExperienceLog> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
 
-        
-        
-        List<EmployeeWorkExperienceLog> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<EmployeeWorkExperienceLog> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<EmployeeWorkExperienceLog>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+        return predicates;
     }
+
+    private void applySorting(CriteriaQuery<EmployeeWorkExperienceLog> cq, CriteriaBuilder cb, Root<EmployeeWorkExperienceLog> root, EmployeeWorkExperienceLog filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else if (filter.getEndDate()!= null && filter.getEndDate2() != null) {
+            orderList.add(cb.desc(root.get("endDate")));
+        } else if (filter.getStartDate()!= null && filter.getStartDate2() != null) {
+            orderList.add(cb.desc(root.get("startDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, EmployeeWorkExperienceLog filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<EmployeeWorkExperienceLog> countRoot = countQuery.from(EmployeeWorkExperienceLog.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
+    
+    
 
     public EmployeeWorkExperienceLog createEmployeeWorkExperienceLog(EmployeeWorkExperienceLog employeeWorkExperienceLog) throws BusinessLogicException {
         //validateEmployeeWorkExperienceLog(employeeWorkExperienceLog);

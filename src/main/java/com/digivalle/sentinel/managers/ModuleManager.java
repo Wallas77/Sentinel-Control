@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -53,22 +54,46 @@ public class ModuleManager {
     }
     
     public PagedResponse<Module> getModule(Module filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<Module> cq = cb.createQuery(Module.class);
         Root<Module> root = cq.from(Module.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<Module> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<Module> result = query.getResultList();
+        
+        Page<Module> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(Module filter, CriteriaBuilder cb, Root<Module> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
-            cq.orderBy(cb.desc(root.get("updateDate")));
         }
         if(filter.getSerial()!=null){
             predicates.add(cb.equal(root.get("serial"), filter.getSerial()));
@@ -97,26 +122,32 @@ public class ModuleManager {
         if(filter.getApplication()!=null && filter.getApplication().getActive()!=null){
             predicates.add(cb.equal(root.get("application").get("active"), filter.getApplication().getActive()));
         }
-        
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<Module> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
+        return predicates;
+    }
 
-        
-        
-        List<Module> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<Module> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<Module>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    private void applySorting(CriteriaQuery<Module> cq, CriteriaBuilder cb, Root<Module> root, Module filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, Module filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<Module> countRoot = countQuery.from(Module.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
     }
 
     public Module createModule(Module module) throws BusinessLogicException, ExistentEntityException {

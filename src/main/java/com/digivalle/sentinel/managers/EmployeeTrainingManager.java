@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -53,26 +54,49 @@ public class EmployeeTrainingManager {
     }
     
     public PagedResponse<EmployeeTraining> getEmployeeTraining(EmployeeTraining filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<EmployeeTraining> cq = cb.createQuery(EmployeeTraining.class);
         Root<EmployeeTraining> root = cq.from(EmployeeTraining.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<EmployeeTraining> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<EmployeeTraining> result = query.getResultList();
+        
+        Page<EmployeeTraining> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(EmployeeTraining filter, CriteriaBuilder cb, Root<EmployeeTraining> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
-            cq.orderBy(cb.desc(root.get("updateDate")));
         }
         if(filter.getIssuedDate()!=null && filter.getIssuedDate2()!=null){
             predicates.add(cb.between(root.get("issuedDate"), filter.getIssuedDate(),filter.getIssuedDate2()));
-            cq.orderBy(cb.desc(root.get("issuedDate")));
         }
         if(filter.getSerial()!=null){
             predicates.add(cb.equal(root.get("serial"), filter.getSerial()));
@@ -113,26 +137,37 @@ public class EmployeeTrainingManager {
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
         
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<EmployeeTraining> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
-
-        
-        
-        List<EmployeeTraining> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<EmployeeTraining> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<EmployeeTraining>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+        return predicates;
     }
+
+    private void applySorting(CriteriaQuery<EmployeeTraining> cq, CriteriaBuilder cb, Root<EmployeeTraining> root, EmployeeTraining filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else if (filter.getIssuedDate()!= null && filter.getIssuedDate2() != null) {
+            orderList.add(cb.desc(root.get("issuedDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, EmployeeTraining filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<EmployeeTraining> countRoot = countQuery.from(EmployeeTraining.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
+    
 
     public EmployeeTraining createEmployeeTraining(EmployeeTraining employeeTraining) throws BusinessLogicException, ExistentEntityException {
         validateEmployeeTraining(employeeTraining);

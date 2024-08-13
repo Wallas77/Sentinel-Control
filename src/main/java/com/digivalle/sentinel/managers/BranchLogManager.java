@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -53,17 +54,41 @@ public class BranchLogManager {
     }
     
     public PagedResponse<BranchLog> getBranchLog(BranchLog filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<BranchLog> cq = cb.createQuery(BranchLog.class);
         Root<BranchLog> root = cq.from(BranchLog.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<BranchLog> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<BranchLog> result = query.getResultList();
         
+        Page<BranchLog> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(BranchLog filter, CriteriaBuilder cb, Root<BranchLog> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getName()!=null){
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase()+ "%"));
         }
@@ -116,27 +141,37 @@ public class BranchLogManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
-        
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<BranchLog> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
 
-        
-        
-        List<BranchLog> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<BranchLog> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<BranchLog>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+        return predicates;
     }
+
+    private void applySorting(CriteriaQuery<BranchLog> cq, CriteriaBuilder cb, Root<BranchLog> root, BranchLog filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, BranchLog filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<BranchLog> countRoot = countQuery.from(BranchLog.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
+    
+    
 
     public BranchLog createBranchLog(BranchLog branchLog) throws BusinessLogicException {
         //validateBranchLog(branchLog);

@@ -107,6 +107,14 @@ public class EmployeeLog extends BaseEntity{
     private String emergencyContactName;
     @Column(name = "EMERGENCY_CONTACT_PHONE")
     private String emergencyContactPhone;
+    @Column(name = "START_CONTRACT_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
+    private Date startContractDate;
+    @Transient
+    private Date startContractDate2;
+    @Column(name = "END_CONTRACT_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
+    private Date endContractDate;
+    @Transient
+    private Date endContractDate2;
     
     private UUID employeeId;
     private UUID transactionId;

@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -53,22 +54,46 @@ public class EmployeeLogManager {
     }
     
     public PagedResponse<EmployeeLog> getEmployeeLog(EmployeeLog filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<EmployeeLog> cq = cb.createQuery(EmployeeLog.class);
         Root<EmployeeLog> root = cq.from(EmployeeLog.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<EmployeeLog> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<EmployeeLog> result = query.getResultList();
+        
+        Page<EmployeeLog> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(EmployeeLog filter, CriteriaBuilder cb, Root<EmployeeLog> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
-            cq.orderBy(cb.desc(root.get("updateDate")));
         }
         if(filter.getBirthday()!=null){
             predicates.add(cb.equal(root.get("birthday"), filter.getBirthday()));
@@ -90,7 +115,6 @@ public class EmployeeLogManager {
         }
         if(filter.getSalaryAmount()!=null && filter.getSalaryAmount2()!=null){
             predicates.add(cb.between(root.get("salaryAmount"), filter.getSalaryAmount(),filter.getSalaryAmount2()));
-            cq.orderBy(cb.desc(root.get("salaryAmount")));
         }
         if(filter.getEmergencyContactName()!=null){
             predicates.add(cb.like(cb.lower(root.get("emergencyContactName")), "%" + filter.getEmergencyContactName().toLowerCase()+ "%"));
@@ -127,7 +151,6 @@ public class EmployeeLogManager {
         }
         if(filter.getHeight()!=null && filter.getHeight2()!=null){
             predicates.add(cb.between(root.get("height"), filter.getHeight(),filter.getHeight2()));
-            cq.orderBy(cb.desc(root.get("height")));
         }
         if(filter.getHomePhone()!=null){
             predicates.add(cb.like(cb.lower(root.get("homePhone")), "%" + filter.getHomePhone().toLowerCase()+ "%"));
@@ -161,7 +184,6 @@ public class EmployeeLogManager {
         }
         if(filter.getWeight()!=null && filter.getWeight2()!=null){
             predicates.add(cb.between(root.get("weight"), filter.getWeight(),filter.getWeight2()));
-            cq.orderBy(cb.desc(root.get("weight")));
         }
         if(filter.getZipCode()!=null){
             predicates.add(cb.like(cb.lower(root.get("zipCode")), "%" + filter.getZipCode().toLowerCase()+ "%"));
@@ -175,27 +197,49 @@ public class EmployeeLogManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
-        
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<EmployeeLog> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
 
-        
-        
-        List<EmployeeLog> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<EmployeeLog> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<EmployeeLog>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+        return predicates;
     }
+
+    private void applySorting(CriteriaQuery<EmployeeLog> cq, CriteriaBuilder cb, Root<EmployeeLog> root, EmployeeLog filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else if (filter.getSalaryAmount()!= null && filter.getSalaryAmount2() != null) {
+            orderList.add(cb.desc(root.get("salaryAmount")));
+        } else if (filter.getHeight()!= null && filter.getHeight2() != null) {
+            orderList.add(cb.desc(root.get("height")));
+        } else if (filter.getWeight()!= null && filter.getWeight2() != null) {
+            orderList.add(cb.desc(root.get("weight")));
+        } else if (filter.getWeight()!= null && filter.getWeight2() != null) {
+            orderList.add(cb.desc(root.get("weight")));
+        } else if (filter.getStartContractDate()!= null && filter.getStartContractDate2() != null) {
+            orderList.add(cb.desc(root.get("startContractDate")));
+        } else if (filter.getEndContractDate()!= null && filter.getEndContractDate2() != null) {
+            orderList.add(cb.desc(root.get("endContractDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, EmployeeLog filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<EmployeeLog> countRoot = countQuery.from(EmployeeLog.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
+    
+    
 
     public EmployeeLog createEmployeeLog(EmployeeLog employeeLog) throws BusinessLogicException {
         //validateEmployeeLog(employeeLog);

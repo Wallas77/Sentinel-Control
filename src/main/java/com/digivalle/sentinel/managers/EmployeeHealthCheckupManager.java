@@ -16,6 +16,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
@@ -53,26 +54,49 @@ public class EmployeeHealthCheckupManager {
     }
     
     public PagedResponse<EmployeeHealthCheckup> getEmployeeHealthCheckup(EmployeeHealthCheckup filter, Paging paging){
-        
         Pageable pageable = PageRequest.of(paging.getPage(), paging.getPageSize());
         CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-        
         CriteriaQuery<EmployeeHealthCheckup> cq = cb.createQuery(EmployeeHealthCheckup.class);
         Root<EmployeeHealthCheckup> root = cq.from(EmployeeHealthCheckup.class);
-        //cq.orderBy(cb.asc(root.get("id")));
 
-        List<Predicate> predicates = new ArrayList<Predicate>();
-        cq.orderBy(cb.desc(root.get("creationDate")));
+        // Building predicates
+        List<Predicate> predicates = buildPredicates(filter, cb, root);
+
+        // Applying predicates
+        if (!predicates.isEmpty()) {
+            cq.where(predicates.toArray(Predicate[]::new));
+        }
+
+        // Apply sorting
+        applySorting(cq, cb, root, filter);
+
+        // Query for paginated results
+        TypedQuery<EmployeeHealthCheckup> query = entityManager.createQuery(cq)
+                                               .setFirstResult((int) pageable.getOffset())
+                                               .setMaxResults(pageable.getPageSize());
+
+        // Fetch the total count using a separate query to avoid loading all results into memory
+        long iTotal = countTotal(cb, filter);
+
+        // Execute the query to get the results
+        List<EmployeeHealthCheckup> result = query.getResultList();
+        
+        Page<EmployeeHealthCheckup> page = new PageImpl<>(result, pageable, iTotal);
+        
+        return new PagedResponse<>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+    }
+    
+    private List<Predicate> buildPredicates(EmployeeHealthCheckup filter, CriteriaBuilder cb, Root<EmployeeHealthCheckup> root) {
+        List<Predicate> predicates = new ArrayList<>();
+
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
-            cq.orderBy(cb.desc(root.get("updateDate")));
         }
         if(filter.getIssuedDate()!=null && filter.getIssuedDate2()!=null){
             predicates.add(cb.between(root.get("issuedDate"), filter.getIssuedDate(),filter.getIssuedDate2()));
-            cq.orderBy(cb.desc(root.get("issuedDate")));
         }
         if(filter.getSerial()!=null){
             predicates.add(cb.equal(root.get("serial"), filter.getSerial()));
@@ -109,27 +133,38 @@ public class EmployeeHealthCheckupManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
-        
-        cq.select(root);
-        if(predicates.size()>0){
-            cq.where(predicates.toArray(new Predicate[0]));
-        }
-        
-        TypedQuery<EmployeeHealthCheckup> query = entityManager.createQuery(cq);
-        
-        int iTotal = query.getResultList().size();
 
-        
-        
-        List<EmployeeHealthCheckup> result = query.setFirstResult((int) pageable.getOffset())
-                                    .setMaxResults(pageable.getPageSize())
-                                    .getResultList();
-        
-        
-        Page<EmployeeHealthCheckup> page = new PageImpl<>(result, pageable, iTotal);
-        
-        return new PagedResponse<EmployeeHealthCheckup>((int) page.getTotalElements(),page.getTotalPages(), paging.getPage(), paging.getPageSize(), page.getContent());   
+        return predicates;
     }
+
+    private void applySorting(CriteriaQuery<EmployeeHealthCheckup> cq, CriteriaBuilder cb, Root<EmployeeHealthCheckup> root, EmployeeHealthCheckup filter) {
+        List<Order> orderList = new ArrayList<>();
+
+        if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
+            orderList.add(cb.desc(root.get("updateDate")));
+        } else if (filter.getIssuedDate()!= null && filter.getIssuedDate2()!= null) {
+            orderList.add(cb.desc(root.get("issuedDate")));
+        } else {
+            orderList.add(cb.desc(root.get("creationDate")));
+        }
+
+        cq.orderBy(orderList);
+    }
+
+    private long countTotal(CriteriaBuilder cb, EmployeeHealthCheckup filter) {
+        CriteriaQuery<Long> countQuery = cb.createQuery(Long.class);
+        Root<EmployeeHealthCheckup> countRoot = countQuery.from(EmployeeHealthCheckup.class);
+
+        countQuery.select(cb.count(countRoot));
+        List<Predicate> countPredicates = buildPredicates(filter, cb, countRoot);
+        if (!countPredicates.isEmpty()) {
+            countQuery.where(countPredicates.toArray(Predicate[]::new));
+        }
+
+        return entityManager.createQuery(countQuery).getSingleResult();
+    }
+
+    
 
     public EmployeeHealthCheckup createEmployeeHealthCheckup(EmployeeHealthCheckup employeeHealthCheckup) throws BusinessLogicException, ExistentEntityException {
         validateEmployeeHealthCheckup(employeeHealthCheckup);
