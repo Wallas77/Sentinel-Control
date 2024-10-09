@@ -45,6 +45,8 @@ public class RoleResponsability extends BaseSerializedEntity{
     @Column(name = "END_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date endDate;
     @ManyToOne
-    @JoinColumn(name = "CUSTOMER_ID", nullable = false)
-    private Customer customer;
+    @JoinColumn(name = "ROLE_ID", nullable = false)
+    private Role role;
+    @Column(name = "EMPLOYEE_BONUS")
+    private Double employeeBonus;
 }

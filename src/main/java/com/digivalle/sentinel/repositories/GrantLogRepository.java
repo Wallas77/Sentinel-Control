@@ -17,6 +17,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * @author Waldir.Valle
  */
 public interface GrantLogRepository extends JpaRepository<GrantLog, UUID>{
+    @SuppressWarnings("null")
     @Override
     GrantLog getById(UUID id);
     List<GrantLog> getByName(String name);

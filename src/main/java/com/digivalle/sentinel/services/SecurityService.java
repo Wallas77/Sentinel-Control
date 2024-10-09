@@ -56,6 +56,10 @@ public class SecurityService {
     @Autowired
     CountryService countryService;
     
+    @Autowired
+    VehicleBrandService vehicleBrandService;
+    
+    
     
     
      public String initialize () throws EntityNotFoundException, ExistentEntityException{
@@ -65,6 +69,7 @@ public class SecurityService {
         response += "Profile: "+profileService.initialize()+"\n";
         response += "User: "+userService.initialize()+"\n";
         response += "Country: "+countryService.initialize()+"\n";
+        response += "VehicleBrand: "+vehicleBrandService.initialize()+"\n";
         
         
         return response;

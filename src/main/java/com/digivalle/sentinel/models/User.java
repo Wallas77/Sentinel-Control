@@ -14,8 +14,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 @Entity
-//@Table(name = "USERS", indexes = @Index(columnList = "name, email"))
-@Table(name = "USERS")
+@Table(name = "USERS", indexes = @Index(columnList = "name, email"))
+//@Table(name = "USERS")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

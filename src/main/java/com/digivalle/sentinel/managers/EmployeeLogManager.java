@@ -113,9 +113,7 @@ public class EmployeeLogManager {
         if(filter.getColony()!=null){
             predicates.add(cb.like(cb.lower(root.get("colony")), "%" + filter.getColony().toLowerCase()+ "%"));
         }
-        if(filter.getSalaryAmount()!=null && filter.getSalaryAmount2()!=null){
-            predicates.add(cb.between(root.get("salaryAmount"), filter.getSalaryAmount(),filter.getSalaryAmount2()));
-        }
+        
         if(filter.getEmergencyContactName()!=null){
             predicates.add(cb.like(cb.lower(root.get("emergencyContactName")), "%" + filter.getEmergencyContactName().toLowerCase()+ "%"));
         }
@@ -206,8 +204,6 @@ public class EmployeeLogManager {
 
         if (filter.getUpdateDate() != null && filter.getUpdateDate2() != null) {
             orderList.add(cb.desc(root.get("updateDate")));
-        } else if (filter.getSalaryAmount()!= null && filter.getSalaryAmount2() != null) {
-            orderList.add(cb.desc(root.get("salaryAmount")));
         } else if (filter.getHeight()!= null && filter.getHeight2() != null) {
             orderList.add(cb.desc(root.get("height")));
         } else if (filter.getWeight()!= null && filter.getWeight2() != null) {

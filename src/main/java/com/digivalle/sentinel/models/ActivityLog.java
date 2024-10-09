@@ -5,12 +5,17 @@
  */
 package com.digivalle.sentinel.models;
 
+import com.digivalle.sentinel.models.enums.ActivityStatusEnum;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+
 import java.util.Date;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -29,18 +34,29 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
 public class ActivityLog extends BaseEntity{
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_ID", nullable = false)
+    private Service service;
     @Column(name = "NAME" , columnDefinition = "VARCHAR(100)")
     private String name;
     @Column(name = "DESCRIPTION")
     private String description;
     @Column(name = "ACTIVITY_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date activityDate;
+    @Transient
+    private Date activityDate2;
     @Column(name = "START_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date startDate;
+    @Transient
+    private Date startDate2;
     @Column(name = "END_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date endDate;
+    @Transient
+    private Date endDate2;
     @Column(name = "CANCELED_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date canceledDate;
+    @Transient
+    private Date canceledDate2;
     @Column(name = "REQUIRED_FILES")
     private Integer requiredFiles;
     @ManyToOne
@@ -49,6 +65,11 @@ public class ActivityLog extends BaseEntity{
     @ManyToOne
     @JoinColumn(name = "EMPLOYEE_ID", nullable = false)
     private Employee employee;
+    @Column(name = "EMPLOYEE_BONUS")
+    private Double employeeBonus;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "ACTIVITY_STATUS", columnDefinition = "VARCHAR(20)")
+    private ActivityStatusEnum activityStatus;
     
     private UUID activityId;
     private UUID transactionId;

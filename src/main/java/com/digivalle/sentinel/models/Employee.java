@@ -99,10 +99,8 @@ public class Employee extends BaseSerializedEntity{
     private String homePhone;
     @Column(name = "EMAIL", columnDefinition = "VARCHAR(150)")
     private String email;
-    @Column(name = "SALARY_AMOUNT")
-    private Double salaryAmount;
-    @Transient
-    private Double salaryAmount2;
+    
+    private Integer payrollPeriodDays;
     @Column(name = "EMERGENCY_CONTACT_NAME")
     private String emergencyContactName;
     @Column(name = "EMERGENCY_CONTACT_PHONE")

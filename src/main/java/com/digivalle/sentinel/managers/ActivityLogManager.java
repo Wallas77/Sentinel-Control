@@ -98,8 +98,54 @@ public class ActivityLogManager {
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
+       
         if(filter.getName()!=null){
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase()+ "%"));
+        }
+        if(filter.getDescription()!=null){
+            predicates.add(cb.like(cb.lower(root.get("description")), "%" + filter.getDescription().toLowerCase()+ "%"));
+        }
+        if(filter.getActivityDate()!=null && filter.getActivityDate2()!=null){
+            predicates.add(cb.between(root.get("activityDate"), filter.getActivityDate(),filter.getActivityDate2()));
+        }
+        if(filter.getStartDate()!=null && filter.getStartDate2()!=null){
+            predicates.add(cb.between(root.get("startDate"), filter.getStartDate(),filter.getStartDate2()));
+        }
+        if(filter.getEndDate()!=null && filter.getEndDate2()!=null){
+            predicates.add(cb.between(root.get("endDate"), filter.getEndDate(),filter.getEndDate2()));
+        }
+        if(filter.getCanceledDate()!=null && filter.getCanceledDate2()!=null){
+            predicates.add(cb.between(root.get("canceledDate"), filter.getCanceledDate(),filter.getCanceledDate2()));
+        }
+        if(filter.getRequiredFiles()!=null){
+            predicates.add(cb.equal(root.get("requiredFiles"), filter.getRequiredFiles()));
+        }
+        if(filter.getRoleResponsability()!=null){
+            if(filter.getRoleResponsability().getId()!=null){
+                predicates.add(cb.equal(root.get("roleResponsability").get("id"), filter.getRoleResponsability().getId()));
+            }
+            if(filter.getRoleResponsability().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("roleResponsability").get("name")), "%" + filter.getRoleResponsability().getName().toLowerCase()+ "%"));
+            }
+        }
+        if(filter.getEmployee()!=null){
+            if(filter.getEmployee().getId()!=null){
+                predicates.add(cb.equal(root.get("employee").get("id"), filter.getEmployee().getId()));
+            }
+            if(filter.getEmployee().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("employee").get("name")), "%" + filter.getEmployee().getName().toLowerCase()+ "%"));
+            }
+        }
+        if(filter.getEmployeeBonus()!=null){
+            predicates.add(cb.equal(root.get("employeeBonus"), filter.getEmployeeBonus()));
+        }
+        if(filter.getService()!=null){
+            if(filter.getService().getId()!=null){
+                predicates.add(cb.equal(root.get("service").get("id"), filter.getService().getId()));
+            }
+            if(filter.getService().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("service").get("name")), "%" + filter.getService().getName().toLowerCase()+ "%"));
+            }
         }
         if(filter.getActive()!=null){
             predicates.add(cb.equal(root.get("active"), filter.getActive()));

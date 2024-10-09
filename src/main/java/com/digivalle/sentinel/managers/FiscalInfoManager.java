@@ -118,14 +118,7 @@ public class FiscalInfoManager {
                 predicates.add(cb.like(cb.lower(root.get("country").get("name")), "%" + filter.getCountry().getName().toLowerCase()+ "%"));
             }
         }
-        if(filter.getCustomer()!=null){
-            if(filter.getCustomer().getId()!=null){
-                predicates.add(cb.equal(root.get("customer").get("id"), filter.getCustomer().getId()));
-            }
-            if(filter.getCustomer().getName()!=null){
-                predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
-            }
-        }
+        
         if(filter.getExternalNumber()!=null){
             predicates.add(cb.like(cb.lower(root.get("externalNumber")), "%" + filter.getExternalNumber().toLowerCase()+ "%"));
         }
@@ -193,8 +186,6 @@ public class FiscalInfoManager {
     private void validateFiscalInfo(FiscalInfo fiscalInfo) throws BusinessLogicException {
         if (StringUtils.isEmpty(fiscalInfo.getName())) {
             throw new BusinessLogicException("El campo Name es requerido para el objeto FiscalInfo");
-        } else if (fiscalInfo.getCustomer()==null) {
-            throw new BusinessLogicException("El campo Customer es requerido para el objeto FiscalInfo");
         } else if (StringUtils.isEmpty(fiscalInfo.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto FiscalInfo");
         } 
@@ -225,9 +216,6 @@ public class FiscalInfoManager {
             }
             if(fiscalInfo.getCountry()!=null){
                 persistedFiscalInfo.setCountry(fiscalInfo.getCountry());
-            }
-            if(fiscalInfo.getCustomer()!=null){
-                persistedFiscalInfo.setCustomer(fiscalInfo.getCustomer());
             }
             if(fiscalInfo.getExternalNumber()!=null){
                 persistedFiscalInfo.setExternalNumber(fiscalInfo.getExternalNumber());

@@ -29,9 +29,6 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper=false)
 public class FiscalInfo extends BaseSerializedEntity{
     
-    @ManyToOne
-    @JoinColumn(name = "CUSTOMER_ID", nullable = false)
-    private Customer customer;
     @Column(name = "CODE")
     private String code;
     @Column(name = "NAME")

@@ -119,12 +119,12 @@ public class RoleResponsabilityManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
-        if(filter.getCustomer()!=null){
-            if(filter.getCustomer().getId()!=null){
-                predicates.add(cb.equal(root.get("customer").get("id"), filter.getCustomer().getId()));
+        if(filter.getRole()!=null){
+            if(filter.getRole().getId()!=null){
+                predicates.add(cb.equal(root.get("role").get("id"), filter.getRole().getId()));
             }
-            if(filter.getCustomer().getName()!=null){
-                predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
+            if(filter.getRole().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("role").get("name")), "%" + filter.getRole().getName().toLowerCase()+ "%"));
             }
         }
         return predicates;
@@ -199,8 +199,8 @@ public class RoleResponsabilityManager {
             if(roleResponsability.getTimePeriod()!=null){
                 persistedRoleResponsability.setTimePeriod(roleResponsability.getTimePeriod());
             }
-            if(roleResponsability.getCustomer()!=null){
-                persistedRoleResponsability.setCustomer(roleResponsability.getCustomer());
+            if(roleResponsability.getRole()!=null){
+                persistedRoleResponsability.setRole(roleResponsability.getRole());
             }
             if(roleResponsability.getActive()!=null){
                 persistedRoleResponsability.setActive(roleResponsability.getActive());
