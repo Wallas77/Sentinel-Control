@@ -32,5 +32,6 @@ public class ApplicationLog extends BaseEntity{
     private UUID applicationId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

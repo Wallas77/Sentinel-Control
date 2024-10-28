@@ -51,4 +51,5 @@ public class EmployeeWorkExperienceLog extends BaseEntity{
     private UUID employeeWorkExperienceId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

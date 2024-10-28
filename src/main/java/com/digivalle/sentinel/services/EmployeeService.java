@@ -87,6 +87,7 @@ public class EmployeeService {
         employeeLog.setTransactionId(transactionId);
         employeeLog.setEmployeeId(employee.getId());
         employeeLog.setAction(action);
+        employeeLog.setActiveObject(employee.getActive());
         return employeeLog;
     }
 }

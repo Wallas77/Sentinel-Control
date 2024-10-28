@@ -87,6 +87,7 @@ public class BranchService {
         branchLog.setTransactionId(transactionId);
         branchLog.setBranchId(branch.getId());
         branchLog.setAction(action);
+        branchLog.setActiveObject(branch.getActive());
         return branchLog;
     }
 }

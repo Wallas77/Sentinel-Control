@@ -55,5 +55,6 @@ public class SupplierLog extends BaseEntity{
     private UUID supplierId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

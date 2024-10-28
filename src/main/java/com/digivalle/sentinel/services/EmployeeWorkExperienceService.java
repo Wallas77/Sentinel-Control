@@ -87,6 +87,7 @@ public class EmployeeWorkExperienceService {
         employeeWorkExperienceLog.setTransactionId(transactionId);
         employeeWorkExperienceLog.setEmployeeWorkExperienceId(employeeWorkExperience.getId());
         employeeWorkExperienceLog.setAction(action);
+        employeeWorkExperienceLog.setActiveObject(employeeWorkExperience.getActive());
         return employeeWorkExperienceLog;
     }
 }

@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
  * @author Waldir.Valle
  */
 @Entity
-@Table(name = "COMPANIES")
+@Table(name = "COMPANIES_LOG")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -30,7 +30,7 @@ public class CompanyLog extends BaseEntity{
     @Column(name = "NAME" , columnDefinition = "VARCHAR(200)")
     private String name;
     @ManyToOne
-    @JoinColumn(name = "FISCAL_INFO_ID", nullable = false)
+    @JoinColumn(name = "FISCAL_INFO_ID", nullable = true)
     private FiscalInfo fiscalInfo;
     @ManyToOne
     @JoinColumn(name = "COUNTRY_ID", nullable = false)
@@ -55,4 +55,5 @@ public class CompanyLog extends BaseEntity{
     private UUID companyId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

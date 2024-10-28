@@ -167,6 +167,7 @@ public class ModuleService {
         moduleLog.setTransactionId(transactionId);
         moduleLog.setModuleId(module.getId());
         moduleLog.setAction(action);
+        moduleLog.setActiveObject(module.getActive());
         return moduleLog;
     }
 }

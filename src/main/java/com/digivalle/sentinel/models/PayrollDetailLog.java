@@ -75,5 +75,6 @@ public class PayrollDetailLog extends BaseEntity{
     private UUID payrollDetailId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

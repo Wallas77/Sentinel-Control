@@ -1167,6 +1167,7 @@ public class VehicleBrandService {
         vehicleBrandLog.setTransactionId(transactionId);
         vehicleBrandLog.setVehicleBrandId(vehicleBrand.getId());
         vehicleBrandLog.setAction(action);
+        vehicleBrandLog.setActiveObject(vehicleBrand.getActive());
         return vehicleBrandLog;
     }
 }

@@ -98,6 +98,7 @@ public class RoleResponsabilityService {
         roleResponsabilityLog.setTransactionId(transactionId);
         roleResponsabilityLog.setRoleResponsabilityId(roleResponsability.getId());
         roleResponsabilityLog.setAction(action);
+        roleResponsabilityLog.setActiveObject(roleResponsability.getActive());
         return roleResponsabilityLog;
     }
 }

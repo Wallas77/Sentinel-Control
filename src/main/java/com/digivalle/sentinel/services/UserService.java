@@ -133,6 +133,7 @@ public class UserService {
         userLog.setTransactionId(transactionId);
         userLog.setUserId(user.getId());
         userLog.setAction(action);
+        userLog.setActiveObject(user.getActive());
         return userLog;
     }
 }

@@ -88,6 +88,7 @@ public class EmployeeDocumentService {
         employeeDocumentLog.setTransactionId(transactionId);
         employeeDocumentLog.setEmployeeDocumentId(employeeDocument.getId());
         employeeDocumentLog.setAction(action);
+        employeeDocumentLog.setActiveObject(employeeDocument.getActive());
         return employeeDocumentLog;
     }
 }

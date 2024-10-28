@@ -47,5 +47,6 @@ public class ServiceLog extends BaseEntity{
     private UUID serviceId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

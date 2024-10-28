@@ -30,7 +30,7 @@ public class Company extends BaseSerializedEntity{
     @Column(name = "NAME" , columnDefinition = "VARCHAR(200)")
     private String name;
     @ManyToOne
-    @JoinColumn(name = "FISCAL_INFO_ID", nullable = false)
+    @JoinColumn(name = "FISCAL_INFO_ID", nullable = true)
     private FiscalInfo fiscalInfo;
     @ManyToOne
     @JoinColumn(name = "COUNTRY_ID", nullable = false)

@@ -55,5 +55,6 @@ public class CustomerLog extends BaseEntity{
     private UUID customerId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

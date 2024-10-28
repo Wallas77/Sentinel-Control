@@ -78,16 +78,17 @@ public class ServiceService {
         
     }
     
-    public ServiceLog convertLog (Service Service, UUID transactionId, String action){
+    public ServiceLog convertLog (Service service, UUID transactionId, String action){
         Gson gson= new Gson();
-        String tmp = gson.toJson(Service);
-        ServiceLog ServiceLog = gson.fromJson(tmp,ServiceLog.class);
-        ServiceLog.setId(null);
-        ServiceLog.setUpdateDate(null);
-        ServiceLog.setTransactionId(transactionId);
-        ServiceLog.setServiceId(Service.getId());
-        ServiceLog.setAction(action);
-        return ServiceLog;
+        String tmp = gson.toJson(service);
+        ServiceLog serviceLog = gson.fromJson(tmp,ServiceLog.class);
+        serviceLog.setId(null);
+        serviceLog.setUpdateDate(null);
+        serviceLog.setTransactionId(transactionId);
+        serviceLog.setServiceId(service.getId());
+        serviceLog.setAction(action);
+        serviceLog.setActiveObject(service.getActive());
+        return serviceLog;
     }
 }
 

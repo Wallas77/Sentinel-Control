@@ -30,6 +30,9 @@ public class CustomerDirectoryLog extends BaseEntity{
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "BRANCH_ID", nullable = true)
+    private Branch branch;
     @Column(name = "NAME" , columnDefinition = "VARCHAR(100)")
     private String name;
     @Column(name = "DESCRIPTION")
@@ -38,5 +41,6 @@ public class CustomerDirectoryLog extends BaseEntity{
     private UUID customerDirectoryId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

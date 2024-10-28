@@ -41,4 +41,5 @@ public class AccessControlObjectLog extends BaseEntity{
     private UUID accessControlObjectId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

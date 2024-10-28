@@ -6,21 +6,16 @@
 package com.digivalle.sentinel.models;
 
 import com.digivalle.sentinel.models.enums.AccessControlTypeEnum;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -93,6 +88,7 @@ public class AccessControlLog extends BaseEntity{
     private UUID accessControlId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 
 }

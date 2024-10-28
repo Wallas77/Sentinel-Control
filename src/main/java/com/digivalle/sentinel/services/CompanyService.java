@@ -87,6 +87,7 @@ public class CompanyService {
         companyLog.setTransactionId(transactionId);
         companyLog.setCompanyId(company.getId());
         companyLog.setAction(action);
+        companyLog.setActiveObject(company.getActive());
         return companyLog;
     }
 }

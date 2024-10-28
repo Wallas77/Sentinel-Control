@@ -38,5 +38,6 @@ public class ActivityFileLog extends BaseEntity{
     private UUID activityFileId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

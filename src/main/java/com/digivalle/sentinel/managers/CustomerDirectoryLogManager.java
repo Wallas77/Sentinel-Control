@@ -118,6 +118,14 @@ public class CustomerDirectoryLogManager {
                 predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
             }
         }
+        if(filter.getBranch()!=null){
+            if(filter.getBranch().getId()!=null){
+                predicates.add(cb.equal(root.get("branch").get("id"), filter.getBranch().getId()));
+            }
+            if(filter.getBranch().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("branch").get("name")), "%" + filter.getBranch().getName().toLowerCase()+ "%"));
+            }
+        }
         if(filter.getCustomerDirectoryId()!=null){
             predicates.add(cb.equal(root.get("customerDirectoryId"), filter.getCustomerDirectoryId()));
         }

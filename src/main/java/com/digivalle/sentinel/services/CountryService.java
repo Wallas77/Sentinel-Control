@@ -98,6 +98,7 @@ public class CountryService {
         countryLog.setTransactionId(transactionId);
         countryLog.setCountryId(country.getId());
         countryLog.setAction(action);
+        countryLog.setActiveObject(country.getActive());
         return countryLog;
     }
 }

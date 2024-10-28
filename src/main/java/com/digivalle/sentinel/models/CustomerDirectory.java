@@ -30,6 +30,9 @@ public class CustomerDirectory extends BaseSerializedEntity{
     @ManyToOne
     @JoinColumn(name = "CUSTOMER_ID", nullable = false)
     private Customer customer;
+    @ManyToOne
+    @JoinColumn(name = "BRANCH_ID", nullable = true)
+    private Branch branch;
     @Column(name = "NAME" , columnDefinition = "VARCHAR(100)")
     private String name;
     @Column(name = "DESCRIPTION")

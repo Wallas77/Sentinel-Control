@@ -176,6 +176,7 @@ public class ProfileService {
         profileLog.setTransactionId(transactionId);
         profileLog.setProfileId(profile.getId());
         profileLog.setAction(action);
+        profileLog.setActiveObject(profile.getActive());
         return profileLog;
     }
 }

@@ -83,10 +83,12 @@ public class ContactService {
         String tmp = gson.toJson(contact);
         ContactLog contactLog = gson.fromJson(tmp,ContactLog.class);
         contactLog.setId(null);
+        
         contactLog.setUpdateDate(null);
         contactLog.setTransactionId(transactionId);
         contactLog.setContactId(contact.getId());
         contactLog.setAction(action);
+        contactLog.setActiveObject(contact.getActive());
         return contactLog;
     }
 }

@@ -87,6 +87,7 @@ public class ServiceAssignmentService {
         serviceAssignmentLog.setTransactionId(transactionId);
         serviceAssignmentLog.setServiceAssignmentId(serviceAssignment.getId());
         serviceAssignmentLog.setAction(action);
+        serviceAssignmentLog.setActiveObject(serviceAssignment.getActive());
         return serviceAssignmentLog;
     }
 }

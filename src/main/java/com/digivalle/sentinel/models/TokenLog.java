@@ -37,6 +37,7 @@ public class TokenLog extends BaseEntity{
     private UUID tokenId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
     
     

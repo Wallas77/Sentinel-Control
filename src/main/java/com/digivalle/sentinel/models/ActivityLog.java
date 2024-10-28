@@ -74,6 +74,7 @@ public class ActivityLog extends BaseEntity{
     private UUID activityId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 
 }

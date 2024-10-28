@@ -115,6 +115,7 @@ public class EmployeeLog extends BaseEntity{
     private UUID employeeId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 
 }

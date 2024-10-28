@@ -112,6 +112,14 @@ public class CustomerDirectoryManager {
                 predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
             }
         }
+        if(filter.getBranch()!=null){
+            if(filter.getBranch().getId()!=null){
+                predicates.add(cb.equal(root.get("branch").get("id"), filter.getBranch().getId()));
+            }
+            if(filter.getBranch().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("branch").get("name")), "%" + filter.getBranch().getName().toLowerCase()+ "%"));
+            }
+        }
         if(filter.getActive()!=null){
             predicates.add(cb.equal(root.get("active"), filter.getActive()));
         }
@@ -154,6 +162,9 @@ public class CustomerDirectoryManager {
     public CustomerDirectory createCustomerDirectory(CustomerDirectory customerDirectory) throws BusinessLogicException, ExistentEntityException {
         validateCustomerDirectory(customerDirectory);
         validateUnique(customerDirectory);
+        if(customerDirectory.getBranch()!=null && customerDirectory.getBranch().getId()==null){
+            customerDirectory.setBranch(null);
+        }
         return customerDirectoryRepository.save(customerDirectory);
     }
 
@@ -191,6 +202,9 @@ public class CustomerDirectoryManager {
             }
             if(customerDirectory.getCustomer()!=null){
                 persistedCustomerDirectory.setCustomer(customerDirectory.getCustomer());
+            }
+            if(customerDirectory.getBranch()!=null){
+                persistedCustomerDirectory.setBranch(customerDirectory.getBranch());
             }
             if(customerDirectory.getActive()!=null){
                 persistedCustomerDirectory.setActive(customerDirectory.getActive());

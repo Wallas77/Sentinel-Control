@@ -36,6 +36,7 @@ public class UserLog extends BaseEntity{
     private UUID userId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
    
    
     

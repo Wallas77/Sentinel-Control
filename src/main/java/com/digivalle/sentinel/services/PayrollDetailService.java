@@ -87,6 +87,7 @@ public class PayrollDetailService {
         payrollDetailLog.setTransactionId(transactionId);
         payrollDetailLog.setPayrollDetailId(payrollDetail.getId());
         payrollDetailLog.setAction(action);
+        payrollDetailLog.setActiveObject(payrollDetail.getActive());
         return payrollDetailLog;
     }
 }

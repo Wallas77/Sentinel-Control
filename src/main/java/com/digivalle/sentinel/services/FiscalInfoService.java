@@ -87,6 +87,7 @@ public class FiscalInfoService {
         fiscalInfoLog.setTransactionId(transactionId);
         fiscalInfoLog.setFiscalInfoId(fiscalInfo.getId());
         fiscalInfoLog.setAction(action);
+        fiscalInfoLog.setActiveObject(fiscalInfo.getActive());
         return fiscalInfoLog;
     }
 }

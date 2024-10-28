@@ -58,5 +58,6 @@ public class BranchLog extends BaseEntity{
     private UUID branchId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 }

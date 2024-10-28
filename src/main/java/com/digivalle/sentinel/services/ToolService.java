@@ -98,6 +98,7 @@ public class ToolService {
         toolLog.setTransactionId(transactionId);
         toolLog.setToolId(tool.getId());
         toolLog.setAction(action);
+        toolLog.setActiveObject(tool.getActive());
         return toolLog;
     }
 }

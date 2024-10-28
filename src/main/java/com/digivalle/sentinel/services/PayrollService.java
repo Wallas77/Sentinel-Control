@@ -122,6 +122,7 @@ public class PayrollService {
         payrollLog.setTransactionId(transactionId);
         payrollLog.setPayrollId(payroll.getId());
         payrollLog.setAction(action);
+        payrollLog.setActiveObject(payroll.getActive());
         return payrollLog;
     }
 }

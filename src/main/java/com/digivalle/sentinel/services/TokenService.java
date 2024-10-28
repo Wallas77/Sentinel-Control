@@ -122,6 +122,7 @@ public class TokenService {
         tokenLog.setTransactionId(transactionId);
         tokenLog.setAction(action);
         tokenLog.setUserIdentifier(token.getUser().getId());
+        tokenLog.setActiveObject(token.getActive());
         return tokenLog;
     }
 

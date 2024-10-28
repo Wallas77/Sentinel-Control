@@ -30,5 +30,6 @@ public class ToolTypeLog extends BaseEntity{
     private UUID toolTypeId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

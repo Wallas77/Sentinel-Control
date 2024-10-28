@@ -37,5 +37,6 @@ public class ModuleLog extends BaseEntity{
     private UUID moduleId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 }

@@ -97,6 +97,7 @@ public class PayrollRoleService {
         payrollRoleLog.setTransactionId(transactionId);
         payrollRoleLog.setPayrollRoleId(payrollRole.getId());
         payrollRoleLog.setAction(action);
+        payrollRoleLog.setActiveObject(payrollRole.getActive());
         return payrollRoleLog;
     }
 }

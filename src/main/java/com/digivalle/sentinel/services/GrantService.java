@@ -112,6 +112,7 @@ public class GrantService {
         grantLog.setTransactionId(transactionId);
         grantLog.setGrantId(grant.getId());
         grantLog.setAction(action);
+        grantLog.setActiveObject(grant.getActive());
         return grantLog;
     }
 }

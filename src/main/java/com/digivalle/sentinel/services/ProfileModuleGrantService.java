@@ -101,6 +101,7 @@ public class ProfileModuleGrantService {
         profileModuleGrantLog.setTransactionId(transactionId);
         profileModuleGrantLog.setProfileModuleGrantId(profileModuleGrant.getId());
         profileModuleGrantLog.setAction(action);
+        profileModuleGrantLog.setActiveObject(profileModuleGrant.getActive());
         return profileModuleGrantLog;
     }
     

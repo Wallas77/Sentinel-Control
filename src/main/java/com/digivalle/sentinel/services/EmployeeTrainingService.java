@@ -98,6 +98,7 @@ public class EmployeeTrainingService {
         employeeTrainingLog.setTransactionId(transactionId);
         employeeTrainingLog.setEmployeeTrainingId(employeeTraining.getId());
         employeeTrainingLog.setAction(action);
+        employeeTrainingLog.setActiveObject(employeeTraining.getActive());
         return employeeTrainingLog;
     }
 }

@@ -87,6 +87,7 @@ public class IncidentService {
         incidentLog.setTransactionId(transactionId);
         incidentLog.setIncidentId(incident.getId());
         incidentLog.setAction(action);
+        incidentLog.setActiveObject(incident.getActive());
         return incidentLog;
     }
 }

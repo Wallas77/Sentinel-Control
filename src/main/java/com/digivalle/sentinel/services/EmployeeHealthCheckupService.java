@@ -87,6 +87,7 @@ public class EmployeeHealthCheckupService {
         employeeTrainingLog.setTransactionId(transactionId);
         employeeTrainingLog.setEmployeeHealthCheckupId(employeeTraining.getId());
         employeeTrainingLog.setAction(action);
+        employeeTrainingLog.setActiveObject(employeeTraining.getActive());
         return employeeTrainingLog;
     }
 }

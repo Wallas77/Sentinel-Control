@@ -33,5 +33,6 @@ public class ProfileLog extends BaseEntity{
     private UUID profileId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
        
 }

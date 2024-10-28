@@ -87,6 +87,7 @@ public class CustomerService {
         customerLog.setTransactionId(transactionId);
         customerLog.setCustomerId(customer.getId());
         customerLog.setAction(action);
+        customerLog.setActiveObject(customer.getActive());
         return customerLog;
     }
 }

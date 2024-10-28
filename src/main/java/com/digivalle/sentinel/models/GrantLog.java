@@ -31,5 +31,6 @@ public class GrantLog extends BaseEntity{
     private UUID grantId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

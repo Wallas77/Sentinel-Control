@@ -10,5 +10,5 @@ package com.digivalle.sentinel.models.enums;
  * @author Waldir.Valle
  */
 public enum ContactTypeEnum {
-    HOMBRE,MUJER,NO_BINARIO,PREFIERE_NO_ESPECIFICAR,OTRO,MASCOTA;
+    PERSONA,OTRO,MASCOTA;
 }

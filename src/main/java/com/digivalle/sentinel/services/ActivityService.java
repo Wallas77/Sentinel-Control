@@ -98,6 +98,7 @@ public class ActivityService {
         activityLog.setTransactionId(transactionId);
         activityLog.setActivityId(activity.getId());
         activityLog.setAction(action);
+        activityLog.setActiveObject(activity.getActive());
         return activityLog;
     }
 }

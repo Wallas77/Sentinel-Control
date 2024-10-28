@@ -46,5 +46,6 @@ public class ProfileModuleGrantLog extends BaseEntity{
     private UUID profileModuleGrantId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

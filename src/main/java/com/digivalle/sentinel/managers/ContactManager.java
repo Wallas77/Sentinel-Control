@@ -246,6 +246,9 @@ public class ContactManager {
             if(contact.getPhoto()!=null){
                 persistedContact.setPhoto(contact.getPhoto());
             }
+            if(contact.getPhotoFormat()!=null){
+                persistedContact.setPhotoFormat(contact.getPhotoFormat());
+            }
             if(contact.getSecondSurname()!=null){
                 persistedContact.setSecondSurname(contact.getSecondSurname());
             }

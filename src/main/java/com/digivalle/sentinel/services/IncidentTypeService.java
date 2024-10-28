@@ -98,6 +98,7 @@ public class IncidentTypeService {
         incidentTypeLog.setTransactionId(transactionId);
         incidentTypeLog.setIncidentTypeId(incidentType.getId());
         incidentTypeLog.setAction(action);
+        incidentTypeLog.setActiveObject(incidentType.getActive());
         return incidentTypeLog;
     }
 }

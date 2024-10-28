@@ -53,4 +53,5 @@ public class RoleResponsabilityLog extends BaseEntity{
     private UUID roleResponsabilityId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

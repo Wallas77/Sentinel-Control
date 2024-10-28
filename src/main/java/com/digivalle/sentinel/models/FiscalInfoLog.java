@@ -28,8 +28,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
 public class FiscalInfoLog extends BaseEntity{
-    @ManyToOne
-    @JoinColumn(name = "CUSTOMER_ID", nullable = false)
+    
     private Customer customer;
     @Column(name = "CODE")
     private String code;
@@ -58,5 +57,6 @@ public class FiscalInfoLog extends BaseEntity{
     private UUID fiscalInfoId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
     
 }

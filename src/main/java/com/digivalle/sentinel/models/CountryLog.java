@@ -32,5 +32,6 @@ public class CountryLog extends BaseEntity{
     private UUID countryId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

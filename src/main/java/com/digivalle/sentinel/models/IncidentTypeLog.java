@@ -47,4 +47,5 @@ public class IncidentTypeLog extends BaseEntity{
     private UUID incidentTypeId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

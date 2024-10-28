@@ -98,6 +98,7 @@ public class ApplicationService {
         applicationLog.setTransactionId(transactionId);
         applicationLog.setApplicationId(application.getId());
         applicationLog.setAction(action);
+        applicationLog.setActiveObject(application.getActive());
         return applicationLog;
     }
 }

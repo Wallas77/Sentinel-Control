@@ -98,6 +98,7 @@ public class RoleService {
         roleLog.setTransactionId(transactionId);
         roleLog.setRoleId(role.getId());
         roleLog.setAction(action);
+        roleLog.setActiveObject(role.getActive());
         return roleLog;
     }
 }

@@ -50,4 +50,5 @@ public class EmployeeHealthCheckupLog extends BaseEntity{
     private UUID employeeHealthCheckupId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

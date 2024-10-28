@@ -44,4 +44,5 @@ public class EmployeeDocumentLog extends BaseEntity{
     private UUID employeeDocumentId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 }

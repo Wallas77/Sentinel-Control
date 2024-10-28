@@ -87,6 +87,7 @@ public class ActivityFileService {
         activityFileLog.setTransactionId(transactionId);
         activityFileLog.setActivityFileId(activityFile.getId());
         activityFileLog.setAction(action);
+        activityFileLog.setActiveObject(activityFile.getActive());
         return activityFileLog;
     }
 }

@@ -87,6 +87,7 @@ public class SupplierService {
         supplierLog.setTransactionId(transactionId);
         supplierLog.setSupplierId(supplier.getId());
         supplierLog.setAction(action);
+        supplierLog.setActiveObject(supplier.getActive());
         return supplierLog;
     }
 }

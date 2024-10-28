@@ -42,6 +42,8 @@ public class Contact extends BaseSerializedEntity{
     private String firstSurname;
     @Column(name = "SECOND_SURNAME", columnDefinition = "VARCHAR(150)")
     private String secondSurname;
+    @Column(name = "PHOTO_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String photoFormat;
     @Column(name = "PHOTO")
     private byte[] photo;
     @Column(name = "BIRTHDAY", columnDefinition= "TIMESTAMP WITH TIME ZONE")

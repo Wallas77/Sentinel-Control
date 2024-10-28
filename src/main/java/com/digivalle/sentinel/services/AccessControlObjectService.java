@@ -98,6 +98,7 @@ public class AccessControlObjectService {
         accessControlObjectLog.setTransactionId(transactionId);
         accessControlObjectLog.setAccessControlObjectId(accessControlObject.getId());
         accessControlObjectLog.setAction(action);
+        accessControlObjectLog.setActiveObject(accessControlObject.getActive());
         return accessControlObjectLog;
     }
 }

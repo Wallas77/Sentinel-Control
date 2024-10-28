@@ -98,6 +98,7 @@ public class CustomerDirectoryService {
         customerDirectoryLog.setTransactionId(transactionId);
         customerDirectoryLog.setCustomerDirectoryId(customerDirectory.getId());
         customerDirectoryLog.setAction(action);
+        customerDirectoryLog.setActiveObject(customerDirectory.getActive());
         return customerDirectoryLog;
     }
 }

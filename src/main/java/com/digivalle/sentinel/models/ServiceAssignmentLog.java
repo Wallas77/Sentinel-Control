@@ -63,5 +63,6 @@ public class ServiceAssignmentLog extends BaseEntity{
     private UUID serviceAssignmentId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

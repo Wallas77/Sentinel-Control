@@ -31,5 +31,6 @@ public class VehicleBrandLog extends BaseEntity{
     private UUID vehicleBrandId;
     private UUID transactionId;
     private String action;
+    private Boolean activeObject;
 
 }

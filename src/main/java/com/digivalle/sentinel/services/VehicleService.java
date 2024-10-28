@@ -87,6 +87,7 @@ public class VehicleService {
         vehicleLog.setTransactionId(transactionId);
         vehicleLog.setVehicleId(vehicle.getId());
         vehicleLog.setAction(action);
+        vehicleLog.setActiveObject(vehicle.getActive());
         return vehicleLog;
     }
 }
