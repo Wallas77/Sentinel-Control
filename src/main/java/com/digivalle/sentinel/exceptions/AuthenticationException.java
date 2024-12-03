@@ -1,6 +1,6 @@
 package com.digivalle.sentinel.exceptions;
 
-public class AuthenticationException extends Throwable {
+public class AuthenticationException extends RuntimeException {
     public AuthenticationException(String message) {
         super(message);
     }

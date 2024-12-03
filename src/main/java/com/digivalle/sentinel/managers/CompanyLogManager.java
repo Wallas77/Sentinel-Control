@@ -19,7 +19,10 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -89,6 +92,25 @@ public class CompanyLogManager {
     private List<Predicate> buildPredicates(CompanyLog filter, CriteriaBuilder cb, Root<CompanyLog> root) {
         List<Predicate> predicates = new ArrayList<>();
 
+        if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
+            predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
+        }
+        
         if(filter.getName()!=null){
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase()+ "%"));
         }

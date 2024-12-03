@@ -53,8 +53,8 @@ public class SecurityController {
     public String initialize(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token) throws Exception, EntityNotFoundException, ExistentEntityException {
         try {
             return securityService.initialize();
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotFoundException | ExistentEntityException ex) {
+            throw ex;
         }  
     }
     
@@ -70,8 +70,8 @@ public class SecurityController {
                 loginRequest.setSessionTime(Definitions.DEFAULT_SESSION_TIME);
             }
             return securityService.login(loginRequest.getUsername(), loginRequest.getPassword(), loginRequest.getSessionTime());
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException ex) {
+            throw ex;
         }  
     } 
     
@@ -87,8 +87,8 @@ public class SecurityController {
         try {
             
             return securityService.getGrantAndModule(token, module, grant);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException ex) {
+            throw ex;
         }  
     }
     
@@ -102,8 +102,8 @@ public class SecurityController {
         try {
             
             return securityService.getUserByToken(token);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException ex) {
+            throw ex;
         }  
     }
     
@@ -118,8 +118,8 @@ public class SecurityController {
         try {
             
             return securityService.getGrantsByApplication(token,application);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException ex) {
+            throw ex;
         }  
     }
     

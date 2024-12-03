@@ -79,9 +79,14 @@ public class ActivityFileService {
     }
     
     public ActivityFileLog convertLog (ActivityFile activityFile, UUID transactionId, String action){
-        Gson gson= new Gson();
+        /*Gson gson= new Gson();
         String tmp = gson.toJson(activityFile);
-        ActivityFileLog activityFileLog = gson.fromJson(tmp,ActivityFileLog.class);
+        ActivityFileLog activityFileLog = gson.fromJson(tmp,ActivityFileLog.class);*/
+        ActivityFileLog activityFileLog = new ActivityFileLog();
+        activityFileLog.setActivity(activityFile.getActivity());
+        activityFileLog.setFile(activityFile.getFile());
+        activityFileLog.setFileFormat(activityFile.getFileFormat());
+        activityFileLog.setName(activityFile.getName());
         activityFileLog.setId(null);
         activityFileLog.setUpdateDate(null);
         activityFileLog.setTransactionId(transactionId);

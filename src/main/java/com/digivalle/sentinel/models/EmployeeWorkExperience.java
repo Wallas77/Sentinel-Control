@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
  * @author Waldir.Valle
  */
 @Entity
-@Table(name = "EMPLOYEE_WORK_EXPERIECES", indexes = @Index(columnList = "jobTitle"))
+@Table(name = "EMPLOYEE_WORK_EXPERIECES", indexes = @Index(columnList = "jobTitle,employee_id"))
 
 @Data
 @AllArgsConstructor

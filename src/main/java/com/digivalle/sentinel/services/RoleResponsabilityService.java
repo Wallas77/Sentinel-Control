@@ -12,6 +12,7 @@ import com.digivalle.sentinel.exceptions.EntityNotFoundException;
 import com.digivalle.sentinel.exceptions.ExistentEntityException;
 import com.digivalle.sentinel.managers.RoleResponsabilityLogManager;
 import com.digivalle.sentinel.managers.RoleResponsabilityManager;
+import com.digivalle.sentinel.models.Role;
 import com.digivalle.sentinel.models.RoleResponsability;
 import com.digivalle.sentinel.models.RoleResponsabilityLog;
 import java.util.List;
@@ -44,6 +45,10 @@ public class RoleResponsabilityService {
     
     public List<RoleResponsability> findAll() {
         return roleResponsabilityManager.findAll();
+    }
+    
+    public List<RoleResponsability> findByRoleAndActiveAndDeleted(Role role, Boolean active,Boolean deleted){
+        return roleResponsabilityManager.findByRoleAndActiveAndDeleted(role, active, deleted);
     }
     
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
@@ -90,9 +95,23 @@ public class RoleResponsabilityService {
     }
     
     public RoleResponsabilityLog convertLog (RoleResponsability roleResponsability, UUID transactionId, String action){
-        Gson gson= new Gson();
+        /*Gson gson= new Gson();
         String tmp = gson.toJson(roleResponsability);
-        RoleResponsabilityLog roleResponsabilityLog = gson.fromJson(tmp,RoleResponsabilityLog.class);
+        RoleResponsabilityLog roleResponsabilityLog = gson.fromJson(tmp,RoleResponsabilityLog.class);*/
+        RoleResponsabilityLog roleResponsabilityLog = new RoleResponsabilityLog();
+        
+        roleResponsabilityLog.setDescription(roleResponsability.getDescription());
+        roleResponsabilityLog.setEmployeeBonus(roleResponsability.getEmployeeBonus());
+        roleResponsabilityLog.setEndDate(roleResponsability.getEndDate());
+        roleResponsabilityLog.setEntryTime(roleResponsability.getEntryTime());
+        roleResponsabilityLog.setName(roleResponsability.getName());
+        roleResponsabilityLog.setRecurrence(roleResponsability.getRecurrence());
+        roleResponsabilityLog.setRole(roleResponsability.getRole());
+        roleResponsabilityLog.setStartDate(roleResponsability.getStartDate());
+        roleResponsabilityLog.setTimePeriod(roleResponsability.getTimePeriod());
+        roleResponsabilityLog.setRequiredFiles(roleResponsability.getRequiredFiles());
+        
+        
         roleResponsabilityLog.setId(null);
         roleResponsabilityLog.setUpdateDate(null);
         roleResponsabilityLog.setTransactionId(transactionId);

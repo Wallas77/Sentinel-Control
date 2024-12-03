@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
  * @author Waldir.Valle
  */
 @Entity
-@Table(name = "EMPLOYEE_HEALTH_CHECKUPS_LOG", indexes = @Index(columnList = "name"))
+@Table(name = "EMPLOYEE_HEALTH_CHECKUPS_LOG", indexes = @Index(columnList = "name,employee_id"))
 
 @Data
 @AllArgsConstructor
@@ -36,7 +36,7 @@ public class EmployeeHealthCheckupLog extends BaseEntity{
     private Employee employee;
     @Column(name = "NAME")
     private String name;
-    @Column(name = "NOTES")
+    @Column(name = "NOTES", columnDefinition = "TEXT")
     private String notes;
     @Column(name = "FILE_NAME")
     private String fileName;
@@ -46,6 +46,8 @@ public class EmployeeHealthCheckupLog extends BaseEntity{
     private Date issuedDate;
     @Transient
     private Date issuedDate2;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
     
     private UUID employeeHealthCheckupId;
     private UUID transactionId;

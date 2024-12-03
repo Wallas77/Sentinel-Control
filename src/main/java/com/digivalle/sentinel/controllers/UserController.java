@@ -74,8 +74,8 @@ public class UserController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(userService.getUser(user,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -93,8 +93,8 @@ public class UserController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_USERS,Definitions.GRANT_ACCESS);
             }
             return userService.getById(userId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -112,11 +112,11 @@ public class UserController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_USERS,Definitions.GRANT_CREATE);
             }
             if(user.getUpdateUser()==null){
-                user.setUpdateUser(securityService.getUserByToken(token).getName());
+                user.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(userService.createUser(user), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -136,12 +136,11 @@ public class UserController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_USERS,Definitions.GRANT_UPDATE);
             }
             if(user.getUpdateUser()==null){
-                user.setUpdateUser(securityService.getUserByToken(token).getName());
+                user.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(userService.updateUser(userId, user), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -161,12 +160,12 @@ public class UserController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_USERS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             userService.deleteUser(userId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -186,8 +185,8 @@ public class UserController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(userLogService.getUserLog(userLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -204,8 +203,8 @@ public class UserController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_USERS,Definitions.GRANT_ACCESS);
             }
             return userLogService.getById(userLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

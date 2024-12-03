@@ -77,8 +77,8 @@ public class ServiceAssignmentController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(serviceAssignmentService.getServiceAssignment(serviceAssignment,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class ServiceAssignmentController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return serviceAssignmentService.getById(serviceAssignmentId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class ServiceAssignmentController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(serviceAssignment.getUpdateUser()==null){
-                serviceAssignment.setUpdateUser(securityService.getUserByToken(token).getName());
+                serviceAssignment.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
-            return new ResponseEntity<>(serviceAssignmentService.createServiceAssignment(serviceAssignment), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+            return new ResponseEntity<>(serviceAssignmentService.createServiceAssignment(serviceAssignment, securityService.getUserByToken(token)), HttpStatus.CREATED);
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class ServiceAssignmentController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(serviceAssignment.getUpdateUser()==null){
-                serviceAssignment.setUpdateUser(securityService.getUserByToken(token).getName());
+                serviceAssignment.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
-            return new ResponseEntity<>(serviceAssignmentService.updateServiceAssignment(serviceAssignmentId, serviceAssignment), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+            return new ResponseEntity<>(serviceAssignmentService.updateServiceAssignment(serviceAssignmentId, serviceAssignment,securityService.getUserByToken(token)), HttpStatus.OK);
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class ServiceAssignmentController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             serviceAssignmentService.deleteServiceAssignment(serviceAssignmentId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class ServiceAssignmentController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(serviceAssignmentLogService.getServiceAssignmentLog(serviceAssignmentLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class ServiceAssignmentController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return serviceAssignmentLogService.getById(serviceAssignmentLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

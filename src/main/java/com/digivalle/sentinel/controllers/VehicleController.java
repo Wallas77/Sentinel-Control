@@ -77,8 +77,8 @@ public class VehicleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(vehicleService.getVehicle(vehicle,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class VehicleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return vehicleService.getById(vehicleId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class VehicleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(vehicle.getUpdateUser()==null){
-                vehicle.setUpdateUser(securityService.getUserByToken(token).getName());
+                vehicle.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(vehicleService.createVehicle(vehicle), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class VehicleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(vehicle.getUpdateUser()==null){
-                vehicle.setUpdateUser(securityService.getUserByToken(token).getName());
+                vehicle.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(vehicleService.updateVehicle(vehicleId, vehicle), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class VehicleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             vehicleService.deleteVehicle(vehicleId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class VehicleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(vehicleLogService.getVehicleLog(vehicleLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class VehicleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return vehicleLogService.getById(vehicleLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

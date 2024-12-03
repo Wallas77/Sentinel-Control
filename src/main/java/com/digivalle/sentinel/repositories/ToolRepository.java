@@ -6,6 +6,7 @@
 package com.digivalle.sentinel.repositories;
 
 import com.digivalle.sentinel.models.Tool;
+import com.digivalle.sentinel.models.ToolType;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,7 @@ public interface ToolRepository extends JpaRepository<Tool, UUID>{
     Tool getBySerial(Integer serial);
     Tool getByName(String name);
     List<Tool> findByIdNumber(String idNumber);
+    List<Tool> findByIdNumberAndToolType(String idNumber, ToolType tooltype);
     List<Tool> findByName(String name);
     List<Tool> findByNameIgnoreCaseContaining(String name);
     List<Tool> findByNameIgnoreCaseContainingAndDeleted(String name, Boolean deleted);

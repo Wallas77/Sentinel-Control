@@ -74,8 +74,8 @@ public class ModuleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(moduleService.getModule(module,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -93,8 +93,8 @@ public class ModuleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_MODULES,Definitions.GRANT_ACCESS);
             }
             return moduleService.getById(moduleId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -112,11 +112,11 @@ public class ModuleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_MODULES,Definitions.GRANT_CREATE);
             }
             if(module.getUpdateUser()==null){
-                module.setUpdateUser(securityService.getUserByToken(token).getName());
+                module.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(moduleService.createModule(module), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -135,12 +135,11 @@ public class ModuleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_MODULES,Definitions.GRANT_UPDATE);
             }
             if(module.getUpdateUser()==null){
-                module.setUpdateUser(securityService.getUserByToken(token).getName());
+                module.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(moduleService.updateModule(moduleId, module), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -160,12 +159,12 @@ public class ModuleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_MODULES,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             moduleService.deleteModule(moduleId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -185,8 +184,8 @@ public class ModuleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(moduleLogService.getModuleLog(moduleLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -203,8 +202,8 @@ public class ModuleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_MODULES,Definitions.GRANT_ACCESS);
             }
             return moduleLogService.getById(moduleLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

@@ -77,8 +77,8 @@ public class CustomerDirectoryController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(customerDirectoryService.getCustomerDirectory(customerDirectory,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class CustomerDirectoryController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return customerDirectoryService.getById(customerDirectoryId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class CustomerDirectoryController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(customerDirectory.getUpdateUser()==null){
-                customerDirectory.setUpdateUser(securityService.getUserByToken(token).getName());
+                customerDirectory.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(customerDirectoryService.createCustomerDirectory(customerDirectory), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class CustomerDirectoryController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(customerDirectory.getUpdateUser()==null){
-                customerDirectory.setUpdateUser(securityService.getUserByToken(token).getName());
+                customerDirectory.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(customerDirectoryService.updateCustomerDirectory(customerDirectoryId, customerDirectory), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class CustomerDirectoryController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             customerDirectoryService.deleteCustomerDirectory(customerDirectoryId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class CustomerDirectoryController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(customerDirectoryLogService.getCustomerDirectoryLog(customerDirectoryLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class CustomerDirectoryController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return customerDirectoryLogService.getById(customerDirectoryLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

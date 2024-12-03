@@ -41,6 +41,8 @@ public class EmployeeTraining extends BaseSerializedEntity{
     private String fileName;
     @Column(name = "FILE")
     private byte[] file;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
     @Column(name = "ISSUED_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date issuedDate;
     @Transient

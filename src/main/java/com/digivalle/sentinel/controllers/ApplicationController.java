@@ -77,8 +77,8 @@ public class ApplicationController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(applicationService.getApplication(application,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class ApplicationController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return applicationService.getById(applicationId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class ApplicationController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(application.getUpdateUser()==null){
-                application.setUpdateUser(securityService.getUserByToken(token).getName());
+                application.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(applicationService.createApplication(application), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class ApplicationController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(application.getUpdateUser()==null){
-                application.setUpdateUser(securityService.getUserByToken(token).getName());
+                application.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(applicationService.updateApplication(applicationId, application), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ble) {
+            throw ble;
         }
         
  
@@ -163,12 +162,12 @@ public class ApplicationController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             applicationService.deleteApplication(applicationId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class ApplicationController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(applicationLogService.getApplicationLog(applicationLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class ApplicationController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return applicationLogService.getById(applicationLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

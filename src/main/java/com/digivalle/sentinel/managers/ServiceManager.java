@@ -19,7 +19,10 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,9 +93,39 @@ public class ServiceManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
         if(filter.getSerial()!=null){
@@ -107,6 +140,14 @@ public class ServiceManager {
             }
             if(filter.getCustomer().getName()!=null){
                 predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
+            }
+        }
+        if(filter.getBranch()!=null){
+            if(filter.getBranch().getId()!=null){
+                predicates.add(cb.equal(root.get("branch").get("id"), filter.getBranch().getId()));
+            }
+            if(filter.getBranch().getName()!=null){
+                predicates.add(cb.like(cb.lower(root.get("branch").get("name")), "%" + filter.getBranch().getName().toLowerCase()+ "%"));
             }
         }
         if(filter.getStartContractDate()!=null && filter.getStartContractDate2()!=null){
@@ -160,12 +201,19 @@ public class ServiceManager {
         return ServiceRepository.save(Service);
     }
 
-    private void validateService(Service Service) throws BusinessLogicException {
-        if (StringUtils.isEmpty(Service.getName())) {
+    private void validateService(Service service) throws BusinessLogicException {
+        if (StringUtils.isEmpty(service.getName())) {
             throw new BusinessLogicException("El campo Name es requerido para el objeto Service");
-        } else if (StringUtils.isEmpty(Service.getUpdateUser())) {
+        } else if (StringUtils.isEmpty(service.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto Service");
-        } 
+        } else if(service.getStartContractDate()==null){
+            throw new BusinessLogicException("El campo StartContractDate es requerido para el objeto Service");
+        } else if(service.getEndContractDate()==null){
+            throw new BusinessLogicException("El campo EndContractDate es requerido para el objeto Service");
+        }
+        if(service.getBranch()!=null && service.getBranch().getId()==null){
+            service.setBranch(null);
+        }
     }
     
     private void validateUnique(Service Service) throws ExistentEntityException {
@@ -175,29 +223,34 @@ public class ServiceManager {
         } 
     }
 
-    public Service updateService(UUID ServiceId, Service Service) throws EntityNotExistentException, BusinessLogicException {
-        if (StringUtils.isEmpty(Service.getUpdateUser())) {
+    public Service updateService(UUID ServiceId, Service service) throws EntityNotExistentException, BusinessLogicException {
+        if (StringUtils.isEmpty(service.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto Service");
         } 
-    
+        if(service.getBranch()!=null && service.getBranch().getId()==null){
+            service.setBranch(null);
+        }
         Service persistedService = getById(ServiceId);
         if (persistedService != null) {
-            if(Service.getName()!=null){
-                persistedService.setName(Service.getName());
+            if(service.getName()!=null){
+                persistedService.setName(service.getName());
             }
-            if(Service.getCustomer()!=null){
-                persistedService.setCustomer(Service.getCustomer());
+            if(service.getCustomer()!=null){
+                persistedService.setCustomer(service.getCustomer());
             }
-            if(Service.getEndContractDate()!=null){
-                persistedService.setEndContractDate(Service.getEndContractDate());
+            
+            persistedService.setBranch(service.getBranch());
+            
+            if(service.getEndContractDate()!=null){
+                persistedService.setEndContractDate(service.getEndContractDate());
             }
-            if(Service.getStartContractDate()!=null){
-                persistedService.setStartContractDate(Service.getStartContractDate());
+            if(service.getStartContractDate()!=null){
+                persistedService.setStartContractDate(service.getStartContractDate());
             }
-            if(Service.getActive()!=null){
-                persistedService.setActive(Service.getActive());
+            if(service.getActive()!=null){
+                persistedService.setActive(service.getActive());
             }
-            persistedService.setUpdateUser(Service.getUpdateUser());
+            persistedService.setUpdateUser(service.getUpdateUser());
             return ServiceRepository.save(persistedService);
         } else {
             throw new EntityNotExistentException(Service.class,ServiceId.toString());

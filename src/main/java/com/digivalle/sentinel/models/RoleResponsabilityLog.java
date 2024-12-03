@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -44,11 +45,15 @@ public class RoleResponsabilityLog extends BaseEntity{
     private Date startDate;
     @Column(name = "END_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date endDate;
+    @Column(name = "ENTRY_TIME")
+    public LocalTime entryTime;
     @ManyToOne
     @JoinColumn(name = "ROLE_ID", nullable = false)
     private Role role;
     @Column(name = "EMPLOYEE_BONUS")
     private Double employeeBonus;
+    @Column(name = "REQUIRED_FILES")
+    private Integer requiredFiles;
     
     private UUID roleResponsabilityId;
     private UUID transactionId;

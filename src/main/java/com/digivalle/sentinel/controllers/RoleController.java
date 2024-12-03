@@ -77,8 +77,8 @@ public class RoleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(roleService.getRole(role,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class RoleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return roleService.getById(roleId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class RoleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(role.getUpdateUser()==null){
-                role.setUpdateUser(securityService.getUserByToken(token).getName());
+                role.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(roleService.createRole(role), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class RoleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(role.getUpdateUser()==null){
-                role.setUpdateUser(securityService.getUserByToken(token).getName());
+                role.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(roleService.updateRole(roleId, role), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class RoleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             roleService.deleteRole(roleId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class RoleController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(roleLogService.getRoleLog(roleLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class RoleController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return roleLogService.getById(roleLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

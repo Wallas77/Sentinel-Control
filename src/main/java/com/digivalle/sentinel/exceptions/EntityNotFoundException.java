@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  * @author Waldir.Valle
  */
 @ResponseStatus(HttpStatus.NOT_FOUND)
-public class EntityNotFoundException extends Throwable {
+public class EntityNotFoundException extends RuntimeException {
     public EntityNotFoundException(String entityType, String identity) {
         super(String.format("El objeto de tipo [%s] con identificador [%s] no existe", entityType, identity));
     }

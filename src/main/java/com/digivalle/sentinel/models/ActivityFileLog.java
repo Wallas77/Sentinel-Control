@@ -34,6 +34,8 @@ public class ActivityFileLog extends BaseEntity{
     private String name;
     @Column(name = "FILE")
     private byte[] file;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
 
     private UUID activityFileId;
     private UUID transactionId;

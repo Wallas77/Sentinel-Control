@@ -21,6 +21,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>{
     Employee getBySerial(Integer serial);
     Employee getByName(String name);
     List<Employee> findByName(String name);
+    List<Employee> findByCode(String code);
     List<Employee> findByNameIgnoreCaseContaining(String name);
     List<Employee> findByNameIgnoreCaseContainingAndDeleted(String name, Boolean deleted);
     Page<Employee> findByNameIgnoreCaseContaining(String name, Pageable pageRequest);

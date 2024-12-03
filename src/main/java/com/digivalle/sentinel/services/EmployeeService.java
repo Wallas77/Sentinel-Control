@@ -14,6 +14,8 @@ import com.digivalle.sentinel.managers.EmployeeLogManager;
 import com.digivalle.sentinel.managers.EmployeeManager;
 import com.digivalle.sentinel.models.Employee;
 import com.digivalle.sentinel.models.EmployeeLog;
+import com.digivalle.sentinel.models.Profile;
+import com.digivalle.sentinel.models.User;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -33,6 +35,12 @@ public class EmployeeService {
     @Autowired
     private EmployeeLogManager employeeLogManager;
     
+    @Autowired
+    private UserService userService;
+    
+    @Autowired
+    private ProfileService profileService;
+    
     
     public Employee getById(UUID employeeId) throws EntityNotExistentException {
         return employeeManager.getById(employeeId);
@@ -48,19 +56,65 @@ public class EmployeeService {
     
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
     public Employee createEmployee(Employee employee) throws BusinessLogicException, ExistentEntityException, EntityNotExistentException {
+        User user = new User();
+        Profile profile = new Profile();
+        profile.setName(Definitions.PROFILE_EMPLOYEE_SENTINEL);
+        profile.setActive(Boolean.TRUE);
+        profile.setDeleted(Boolean.FALSE);
+        Paging paging = new Paging(0, 1000);
+        PagedResponse<Profile> profilesPaged= profileService.getProfile(profile, paging);
+        if(!profilesPaged.getElements().isEmpty()){
+            user.setProfile(profilesPaged.getElements().get(0));
+        }
+        user.setEmail(employee.getEmail());
+        user.setName(employee.getName()+" "+employee.getFirstSurname());
+        user.setPassword("1qazxsw2");
+        user.setUpdateUser(employee.getUpdateUser());
+        user = userService.createUser(user);
+        employee.setUser(user);
         Employee employeePersisted = employeeManager.createEmployee(employee);
         employeeLogManager.createEmployeeLog(convertLog(employeePersisted,null,Definitions.LOG_CREATE));
         return getById(employeePersisted.getId());
     }
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
     public Employee updateEmployee(UUID employeeId,Employee employee) throws BusinessLogicException, EntityNotExistentException, ExistentEntityException {
-        Employee employeePersisted = employeeManager.updateEmployee(employeeId, employee);
+        
+        Employee employeePersisted = employeeManager.getById(employeeId);
+        if(employeePersisted.getUser()==null){
+            User user = new User();
+            Profile profile = new Profile();
+            profile.setName(Definitions.PROFILE_EMPLOYEE_SENTINEL);
+            profile.setActive(Boolean.TRUE);
+            profile.setDeleted(Boolean.FALSE);
+            Paging paging = new Paging(0, 1000);
+            PagedResponse<Profile> profilesPaged= profileService.getProfile(profile, paging);
+            if(!profilesPaged.getElements().isEmpty()){
+                user.setProfile(profilesPaged.getElements().get(0));
+            }
+            user.setEmail(employee.getEmail());
+            user.setName(employee.getName()+" "+employee.getFirstSurname());
+            user.setPassword("1qazxsw2");
+            user.setUpdateUser(employee.getUpdateUser());
+            user = userService.createUser(user);
+            employee.setUser(user);
+        } else if(!employeePersisted.getEmail().equals(employee.getEmail()) || !employeePersisted.getName().equals(employee.getName()) || !employeePersisted.getFirstSurname().equals(employee.getFirstSurname())){
+            User user = new User();
+            user.setEmail(employee.getEmail());
+            user.setName(employee.getName()+" "+employee.getFirstSurname());
+            user.setUpdateUser(employee.getUpdateUser());
+            userService.updateUser(employeePersisted.getUser().getId(), user);
+        }
+        employeePersisted = employeeManager.updateEmployee(employeeId, employee);
         employeeLogManager.createEmployeeLog(convertLog(employeePersisted,null,Definitions.LOG_UPDATE));
         return getById(employeePersisted.getId());
     }
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
     public void deleteEmployee(UUID employeeId, String updateUser) throws EntityNotExistentException, BusinessLogicException {
-        Employee employeePersisted = employeeManager.deleteEmployee(employeeId, updateUser);
+        Employee employeePersisted = employeeManager.getById(employeeId);
+        if(employeePersisted.getUser()!=null){
+            userService.deleteUser(employeePersisted.getUser().getId(), updateUser);
+        }
+        employeePersisted = employeeManager.deleteEmployee(employeeId, updateUser);
         employeeLogManager.createEmployeeLog(convertLog(employeePersisted,null,Definitions.LOG_DELETE));
     }  
     

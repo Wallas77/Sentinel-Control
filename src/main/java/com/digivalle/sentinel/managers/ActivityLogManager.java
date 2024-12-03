@@ -23,6 +23,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -93,9 +94,39 @@ public class ActivityLogManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
        
@@ -146,6 +177,19 @@ public class ActivityLogManager {
             if(filter.getService().getName()!=null){
                 predicates.add(cb.like(cb.lower(root.get("service").get("name")), "%" + filter.getService().getName().toLowerCase()+ "%"));
             }
+        }
+        if(filter.getServiceAssignment()!=null){
+            if(filter.getServiceAttendance().getId()!=null){
+                predicates.add(cb.equal(root.get("serviceAssignment").get("id"), filter.getServiceAssignment().getId()));
+            }
+        }
+        if(filter.getServiceAttendance()!=null){
+            if(filter.getServiceAttendance().getId()!=null){
+                predicates.add(cb.equal(root.get("serviceAttendance").get("id"), filter.getServiceAttendance().getId()));
+            }
+        }
+        if(filter.getExactTime()!=null){
+            predicates.add(cb.equal(root.get("exactTime"), filter.getExactTime()));
         }
         if(filter.getActive()!=null){
             predicates.add(cb.equal(root.get("active"), filter.getActive()));
@@ -233,6 +277,22 @@ public class ActivityLogManager {
         activityLog.setDeleted(Boolean.TRUE);
         activityLog.setActive(Boolean.FALSE);
         activityLogRepository.save(activityLog);
+    }
+    
+    public void deleteByRoleResponsabilityIdAndEmployeeId(UUID roleResponsabilityId, UUID employeeId){
+        activityLogRepository.deleteByRoleResponsabilityIdAndEmployeeId(roleResponsabilityId, employeeId);
+    }
+    
+    public void deleteByServiceAttendanceIdAndEmployeeId(UUID serviceAttendanceId, UUID employeeId){
+        activityLogRepository.deleteByServiceAttendanceIdAndEmployeeId(serviceAttendanceId, employeeId);
+    }
+    
+    public void deleteByServiceAssignmentId(UUID serviceAssignmentId){
+        activityLogRepository.deleteByServiceAssignmentId(serviceAssignmentId);
+    }
+    
+    public void deleteByServiceAssignmentIdAndEmployeeId(UUID serviceAssignmentId, UUID employeeId){
+        activityLogRepository.deleteByServiceAssignmentIdAndEmployeeId(serviceAssignmentId, employeeId);
     }
 
     public List<ActivityLog> findAll(){

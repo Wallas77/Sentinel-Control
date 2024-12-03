@@ -75,8 +75,8 @@ public class EmployeeWorkExperienceController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(employeeWorkExperienceService.getEmployeeWorkExperience(employeeWorkExperience,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -94,8 +94,8 @@ public class EmployeeWorkExperienceController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return employeeWorkExperienceService.getById(employeeWorkExperienceId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -113,11 +113,11 @@ public class EmployeeWorkExperienceController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(employeeWorkExperience.getUpdateUser()==null){
-                employeeWorkExperience.setUpdateUser(securityService.getUserByToken(token).getName());
+                employeeWorkExperience.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(employeeWorkExperienceService.createEmployeeWorkExperience(employeeWorkExperience), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -136,12 +136,11 @@ public class EmployeeWorkExperienceController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(employeeWorkExperience.getUpdateUser()==null){
-                employeeWorkExperience.setUpdateUser(securityService.getUserByToken(token).getName());
+                employeeWorkExperience.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(employeeWorkExperienceService.updateEmployeeWorkExperience(employeeWorkExperienceId, employeeWorkExperience), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -161,12 +160,12 @@ public class EmployeeWorkExperienceController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser=securityService.getUserByToken(token).getName();
+                updateUser=securityService.getUserByToken(token).getEmail();
             }
             employeeWorkExperienceService.deleteEmployeeWorkExperience(employeeWorkExperienceId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -186,8 +185,8 @@ public class EmployeeWorkExperienceController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(employeeWorkExperienceLogService.getEmployeeWorkExperienceLog(employeeWorkExperienceLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -204,8 +203,8 @@ public class EmployeeWorkExperienceController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return employeeWorkExperienceLogService.getById(employeeWorkExperienceLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

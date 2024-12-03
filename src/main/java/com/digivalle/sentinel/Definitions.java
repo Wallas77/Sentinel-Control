@@ -21,7 +21,7 @@ public class Definitions {
     public static final int NUM_THREADS = 10; // Define the number of threads in the pool
     /*Profile*/
     public final static String PROFILE_ADMINISTRATOR_SENTINEL ="Administrador";
-    
+    public final static String PROFILE_EMPLOYEE_SENTINEL ="Empleado";
     
     /*Apps*/
     public final static String APPLICATION_SENTINEL ="Sentinel Control Application";

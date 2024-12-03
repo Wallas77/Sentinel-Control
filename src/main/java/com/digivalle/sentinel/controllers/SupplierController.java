@@ -77,8 +77,8 @@ public class SupplierController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(supplierService.getSupplier(supplier,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class SupplierController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_SUPPLIERS,Definitions.GRANT_ACCESS);
             }
             return supplierService.getById(supplierId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class SupplierController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_SUPPLIERS,Definitions.GRANT_CREATE);
             }
             if(supplier.getUpdateUser()==null){
-                supplier.setUpdateUser(securityService.getUserByToken(token).getName());
+                supplier.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(supplierService.createSupplier(supplier), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class SupplierController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_SUPPLIERS,Definitions.GRANT_UPDATE);
             }
             if(supplier.getUpdateUser()==null){
-                supplier.setUpdateUser(securityService.getUserByToken(token).getName());
+                supplier.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(supplierService.updateSupplier(supplierId, supplier), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class SupplierController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_SUPPLIERS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             supplierService.deleteSupplier(supplierId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class SupplierController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(supplierLogService.getSupplierLog(supplierLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class SupplierController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_SUPPLIERS,Definitions.GRANT_ACCESS);
             }
             return supplierLogService.getById(supplierLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

@@ -22,5 +22,6 @@ public interface ServiceAssignmentRepository extends JpaRepository<ServiceAssign
     
     ServiceAssignment getBySerial(Integer serial);
     List<ServiceAssignment> getByServiceAndRoleAndEmployeeAndActiveAndDeleted(Service service, Role role, Employee employee, Boolean active, Boolean deleted);
+    List<ServiceAssignment> getByService_IdAndActiveAndDeleted(UUID serviceId, Boolean active, Boolean deleted);
    
 }

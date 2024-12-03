@@ -1,6 +1,6 @@
 package com.digivalle.sentinel.exceptions;
 
-public class EntityNotExistentException extends Throwable {
+public class EntityNotExistentException extends RuntimeException {
     public EntityNotExistentException(String message) {
         super(message);
     }

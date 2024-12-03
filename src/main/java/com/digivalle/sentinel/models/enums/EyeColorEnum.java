@@ -10,5 +10,5 @@ package com.digivalle.sentinel.models.enums;
  * @author Waldir.Valle
  */
 public enum EyeColorEnum {
-    AZUL, VERDE, MIEL, MARRON;
+    AZUL, VERDE, MIEL, MARRON, GRIS;
 }

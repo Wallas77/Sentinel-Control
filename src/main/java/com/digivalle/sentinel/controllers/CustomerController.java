@@ -77,8 +77,8 @@ public class CustomerController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(customerService.getCustomer(customer,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class CustomerController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_CUSTOMERS,Definitions.GRANT_ACCESS);
             }
             return customerService.getById(customerId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class CustomerController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_CUSTOMERS,Definitions.GRANT_CREATE);
             }
             if(customer.getUpdateUser()==null){
-                customer.setUpdateUser(securityService.getUserByToken(token).getName());
+                customer.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(customerService.createCustomer(customer), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class CustomerController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_CUSTOMERS,Definitions.GRANT_UPDATE);
             }
             if(customer.getUpdateUser()==null){
-                customer.setUpdateUser(securityService.getUserByToken(token).getName());
+                customer.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(customerService.updateCustomer(customerId, customer), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class CustomerController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_CUSTOMERS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             customerService.deleteCustomer(customerId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class CustomerController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(customerLogService.getCustomerLog(customerLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class CustomerController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_CUSTOMERS,Definitions.GRANT_ACCESS);
             }
             return customerLogService.getById(customerLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

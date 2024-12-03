@@ -11,6 +11,7 @@ import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -36,5 +37,11 @@ public class Tool extends BaseSerializedEntity{
     private String name;
     @Column(name = "DESCRIPTION")
     private String description;
-
+    @ManyToOne
+    @JoinColumn(name = "EMPLOYEE_ID", nullable = true)
+    private Employee employee;
+    @Column(name = "COST_AMOUNT")
+    private Double costAmount;
+    @Transient
+    private Double costAmount2;
 }

@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import java.time.LocalTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -59,5 +60,9 @@ public class ServiceAssignment extends BaseSerializedEntity{
     private String recurrencePerWeekDays;
     @Column(name = "RECURRENCE_PER_NUMBER_DAYS")
     private String recurrencePerNumberDays;
+    @Column(name = "ENTRY_TIME")
+    public LocalTime entryTime;
+
+    
 
 }

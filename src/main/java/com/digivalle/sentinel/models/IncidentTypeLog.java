@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
  * @author Waldir.Valle
  */
 @Entity
-@Table(name = "INCIDENT_TYPES", indexes = @Index(columnList = "name"))
+@Table(name = "INCIDENT_TYPES_LOG", indexes = @Index(columnList = "name"))
 
 @Data
 @AllArgsConstructor

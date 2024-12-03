@@ -35,6 +35,12 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper=false)
 public class ActivityLog extends BaseEntity{
     @ManyToOne
+    @JoinColumn(name = "SERVICE_ASSIGNMENT_ID", nullable = false)
+    private ServiceAssignment serviceAssignment;
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_ATTENDANCE_ID", nullable = false)
+    private ServiceAttendance serviceAttendance;
+    @ManyToOne
     @JoinColumn(name = "SERVICE_ID", nullable = false)
     private Service service;
     @Column(name = "NAME" , columnDefinition = "VARCHAR(100)")
@@ -45,6 +51,8 @@ public class ActivityLog extends BaseEntity{
     private Date activityDate;
     @Transient
     private Date activityDate2;
+    @Column(name = "EXACT_TIME")
+    private Boolean exactTime;
     @Column(name = "START_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date startDate;
     @Transient

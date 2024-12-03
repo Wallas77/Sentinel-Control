@@ -77,8 +77,8 @@ public class FiscalInfoController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(fiscalInfoService.getFiscalInfo(fiscalInfo,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class FiscalInfoController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_FISCAL_INFO,Definitions.GRANT_ACCESS);
             }
             return fiscalInfoService.getById(fiscalInfoId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class FiscalInfoController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_FISCAL_INFO,Definitions.GRANT_CREATE);
             }
             if(fiscalInfo.getUpdateUser()==null){
-                fiscalInfo.setUpdateUser(securityService.getUserByToken(token).getName());
+                fiscalInfo.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(fiscalInfoService.createFiscalInfo(fiscalInfo), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class FiscalInfoController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_FISCAL_INFO,Definitions.GRANT_UPDATE);
             }
             if(fiscalInfo.getUpdateUser()==null){
-                fiscalInfo.setUpdateUser(securityService.getUserByToken(token).getName());
+                fiscalInfo.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(fiscalInfoService.updateFiscalInfo(fiscalInfoId, fiscalInfo), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -163,12 +162,12 @@ public class FiscalInfoController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_FISCAL_INFO,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             fiscalInfoService.deleteFiscalInfo(fiscalInfoId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class FiscalInfoController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(fiscalInfoLogService.getFiscalInfoLog(fiscalInfoLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class FiscalInfoController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_FISCAL_INFO,Definitions.GRANT_ACCESS);
             }
             return fiscalInfoLogService.getById(fiscalInfoLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

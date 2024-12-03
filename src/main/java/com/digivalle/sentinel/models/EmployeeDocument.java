@@ -40,4 +40,6 @@ public class EmployeeDocument extends BaseSerializedEntity{
     private String fileName;
     @Column(name = "FILE")
     private byte[] file;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
 }

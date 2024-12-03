@@ -34,4 +34,6 @@ public class ActivityFile extends BaseSerializedEntity{
     private String name;
     @Column(name = "FILE")
     private byte[] file;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
 }

@@ -77,8 +77,8 @@ public class AccessControlObjectController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(accessControlObjectService.getAccessControlObject(accessControlObject,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class AccessControlObjectController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return accessControlObjectService.getById(accessControlObjectId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class AccessControlObjectController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(accessControlObject.getUpdateUser()==null){
-                accessControlObject.setUpdateUser(securityService.getUserByToken(token).getName());
+                accessControlObject.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(accessControlObjectService.createAccessControlObject(accessControlObject), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,11 +138,11 @@ public class AccessControlObjectController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(accessControlObject.getUpdateUser()==null){
-                accessControlObject.setUpdateUser(securityService.getUserByToken(token).getName());
+                accessControlObject.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(accessControlObjectService.updateAccessControlObject(accessControlObjectId, accessControlObject), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ble) {
+            throw ble;
             //throw ble;
         }
         
@@ -163,12 +163,12 @@ public class AccessControlObjectController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             accessControlObjectService.deleteAccessControlObject(accessControlObjectId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +188,8 @@ public class AccessControlObjectController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(accessControlObjectLogService.getAccessControlObjectLog(accessControlObjectLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +206,8 @@ public class AccessControlObjectController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return accessControlObjectLogService.getById(accessControlObjectLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

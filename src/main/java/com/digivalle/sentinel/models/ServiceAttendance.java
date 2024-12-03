@@ -29,7 +29,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
-public class ServiceAttendance extends BaseSerializedEntity{
+public class ServiceAttendance extends BaseEntity{
+    
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_ASSIGNMENT_ID", nullable = false)
+    private ServiceAssignment serviceAssignment;
     @ManyToOne
     @JoinColumn(name = "SERVICE_ID", nullable = false)
     private Service service;

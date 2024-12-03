@@ -74,8 +74,8 @@ public class ProfileController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(profileService.getProfile(profile,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -93,8 +93,8 @@ public class ProfileController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_PROFILES,Definitions.GRANT_ACCESS);
             }
             return profileService.getById(profileId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -112,11 +112,11 @@ public class ProfileController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_PROFILES,Definitions.GRANT_CREATE);
             }
             if(profile.getUpdateUser()==null){
-                profile.setUpdateUser(securityService.getUserByToken(token).getName());
+                profile.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(profileService.createProfile(profile), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -135,12 +135,11 @@ public class ProfileController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_PROFILES,Definitions.GRANT_UPDATE);
             }
             if(profile.getUpdateUser()==null){
-                profile.setUpdateUser(securityService.getUserByToken(token).getName());
+                profile.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(profileService.updateProfile(profileId, profile), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -160,12 +159,12 @@ public class ProfileController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_PROFILES,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             profileService.deleteProfile(profileId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -185,8 +184,8 @@ public class ProfileController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(profileLogService.getProfileLog(profileLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -203,8 +202,8 @@ public class ProfileController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_PROFILES,Definitions.GRANT_ACCESS);
             }
             return profileLogService.getById(profileLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

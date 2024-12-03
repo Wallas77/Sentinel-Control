@@ -10,6 +10,7 @@ import com.digivalle.sentinel.containers.Paging;
 import com.digivalle.sentinel.exceptions.BusinessLogicException;
 import com.digivalle.sentinel.exceptions.EntityNotExistentException;
 import com.digivalle.sentinel.exceptions.ExistentEntityException;
+import com.digivalle.sentinel.models.Role;
 import com.digivalle.sentinel.models.RoleResponsability;
 import com.digivalle.sentinel.repositories.RoleResponsabilityRepository;
 import jakarta.persistence.EntityManager;
@@ -20,6 +21,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,9 +92,39 @@ public class RoleResponsabilityManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
         if(filter.getSerial()!=null){
@@ -126,6 +158,12 @@ public class RoleResponsabilityManager {
             if(filter.getRole().getName()!=null){
                 predicates.add(cb.like(cb.lower(root.get("role").get("name")), "%" + filter.getRole().getName().toLowerCase()+ "%"));
             }
+        }
+        if(filter.getEntryTime()!=null){
+            predicates.add(cb.equal(root.get("entryTime"), filter.getEntryTime()));
+        }
+        if(filter.getRequiredFiles()!=null){
+            predicates.add(cb.equal(root.get("requiredFiles"), filter.getRequiredFiles()));
         }
         return predicates;
     }
@@ -202,8 +240,27 @@ public class RoleResponsabilityManager {
             if(roleResponsability.getRole()!=null){
                 persistedRoleResponsability.setRole(roleResponsability.getRole());
             }
+            if(roleResponsability.getEmployeeBonus()!=null){
+                persistedRoleResponsability.setEmployeeBonus(roleResponsability.getEmployeeBonus());
+            }
             if(roleResponsability.getActive()!=null){
                 persistedRoleResponsability.setActive(roleResponsability.getActive());
+            }
+            if(roleResponsability.getStartDate()!=null){
+                persistedRoleResponsability.setStartDate(roleResponsability.getStartDate());
+            } else {
+                persistedRoleResponsability.setStartDate(null);
+            }
+            if(roleResponsability.getEndDate()!=null){
+                persistedRoleResponsability.setEndDate(roleResponsability.getEndDate());
+            } else {
+                persistedRoleResponsability.setEndDate(null);
+            }
+            if(roleResponsability.getEntryTime()!=null){
+                persistedRoleResponsability.setEntryTime(roleResponsability.getEntryTime());
+            }
+            if(roleResponsability.getRequiredFiles()!=null){
+                persistedRoleResponsability.setRequiredFiles(roleResponsability.getRequiredFiles());
             }
             persistedRoleResponsability.setUpdateUser(roleResponsability.getUpdateUser());
             return roleResponsabilityRepository.save(persistedRoleResponsability);
@@ -237,6 +294,11 @@ public class RoleResponsabilityManager {
     public List<RoleResponsability> findByNameIgnoreCaseContainingAndDeleted(String name,Boolean deleted){
         return roleResponsabilityRepository.findByNameIgnoreCaseContainingAndDeleted(name,deleted);
     }
+    
+    public List<RoleResponsability> findByRoleAndActiveAndDeleted(Role role, Boolean active,Boolean deleted){
+        return roleResponsabilityRepository.findByRoleAndActiveAndDeleted(role, active, deleted);
+    }
+    
     
     public RoleResponsability getBySerial(Integer serial) {
         return roleResponsabilityRepository.getBySerial(serial);

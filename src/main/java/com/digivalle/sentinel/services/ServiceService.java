@@ -28,40 +28,44 @@ public class ServiceService {
     private final static Logger logger = LoggerFactory.getLogger(ServiceService.class);
 
     @Autowired
-    private ServiceManager ServiceManager;
+    private ServiceManager serviceManager;
     
     @Autowired
-    private ServiceLogManager ServiceLogManager;
+    private ServiceLogManager serviceLogManager;
+    
+    @Autowired
+    private ServiceAssignmentService serviceAssignmentService;
     
     
     public Service getById(UUID ServiceId) throws EntityNotExistentException {
-        return ServiceManager.getById(ServiceId);
+        return serviceManager.getById(ServiceId);
     }
     
     public PagedResponse<Service> getService(Service Service,   Paging paging) {
-        return ServiceManager.getService(Service, paging);
+        return serviceManager.getService(Service, paging);
     }
     
     public List<Service> findAll() {
-        return ServiceManager.findAll();
+        return serviceManager.findAll();
     }
     
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
-    public Service createService(Service Service) throws BusinessLogicException, ExistentEntityException, EntityNotExistentException {
-        Service ServicePersisted = ServiceManager.createService(Service);
-        ServiceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_CREATE));
+    public Service createService(Service service) throws BusinessLogicException, ExistentEntityException, EntityNotExistentException {
+        Service ServicePersisted = serviceManager.createService(service);
+        serviceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_CREATE));
         return getById(ServicePersisted.getId());
     }
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
-    public Service updateService(UUID ServiceId,Service Service) throws BusinessLogicException, EntityNotExistentException, ExistentEntityException {
-        Service ServicePersisted = ServiceManager.updateService(ServiceId, Service);
-        ServiceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_UPDATE));
+    public Service updateService(UUID serviceId,Service service) throws BusinessLogicException, EntityNotExistentException, ExistentEntityException {
+        Service ServicePersisted = serviceManager.updateService(serviceId, service);
+        serviceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_UPDATE));
         return getById(ServicePersisted.getId());
     }
     @Transactional(rollbackFor = {BusinessLogicException.class,Exception.class})
-    public void deleteService(UUID ServiceId, String updateUser) throws EntityNotExistentException, BusinessLogicException {
-        Service ServicePersisted = ServiceManager.deleteService(ServiceId, updateUser);
-        ServiceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_DELETE));
+    public void deleteService(UUID serviceId, String updateUser) throws EntityNotExistentException, BusinessLogicException {
+        Service ServicePersisted = serviceManager.deleteService(serviceId, updateUser);
+        serviceLogManager.createServiceLog(convertLog(ServicePersisted,null,Definitions.LOG_DELETE));
+        serviceAssignmentService.deleteServiceAssignmentByServiceId(serviceId, updateUser);
     }  
     
     public Boolean initialize() {

@@ -77,8 +77,8 @@ public class BranchController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(branchService.getBranch(branch,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class BranchController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_BRANCHES,Definitions.GRANT_ACCESS);
             }
             return branchService.getById(branchId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class BranchController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_BRANCHES,Definitions.GRANT_CREATE);
             }
             if(branch.getUpdateUser()==null){
-                branch.setUpdateUser(securityService.getUserByToken(token).getName());
+                branch.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(branchService.createBranch(branch), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,12 +138,11 @@ public class BranchController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_BRANCHES,Definitions.GRANT_UPDATE);
             }
             if(branch.getUpdateUser()==null){
-                branch.setUpdateUser(securityService.getUserByToken(token).getName());
+                branch.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(branchService.updateBranch(branchId, branch), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ble) {
+            throw ble;
         }
         
  
@@ -163,12 +162,12 @@ public class BranchController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_BRANCHES,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             branchService.deleteBranch(branchId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +187,8 @@ public class BranchController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(branchLogService.getBranchLog(branchLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +205,8 @@ public class BranchController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_BRANCHES,Definitions.GRANT_ACCESS);
             }
             return branchLogService.getById(branchLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

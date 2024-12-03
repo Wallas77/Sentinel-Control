@@ -35,7 +35,7 @@ public class EmployeeHealthCheckup extends BaseSerializedEntity{
     private Employee employee;
     @Column(name = "NAME")
     private String name;
-    @Column(name = "NOTES")
+    @Column(name = "NOTES", columnDefinition = "TEXT")
     private String notes;
     @Column(name = "FILE_NAME")
     private String fileName;
@@ -45,4 +45,6 @@ public class EmployeeHealthCheckup extends BaseSerializedEntity{
     private Date issuedDate;
     @Transient
     private Date issuedDate2;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
 }

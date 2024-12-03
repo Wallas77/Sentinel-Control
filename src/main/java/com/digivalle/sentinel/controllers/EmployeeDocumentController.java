@@ -5,6 +5,7 @@
  */
 package com.digivalle.sentinel.controllers;
 
+import javax.validation.Valid;
 import com.digivalle.sentinel.Definitions;
 import com.digivalle.sentinel.containers.PagedResponse;
 import com.digivalle.sentinel.containers.Paging;
@@ -14,7 +15,6 @@ import com.digivalle.sentinel.exceptions.EntityNotExistentException;
 import com.digivalle.sentinel.exceptions.ExistentEntityException;
 import com.digivalle.sentinel.exceptions.NoAccessGrantedException;
 import com.digivalle.sentinel.exceptions.handler.model.ErrorDetails;
-import com.digivalle.sentinel.models.Employee;
 import com.digivalle.sentinel.models.EmployeeDocument;
 import com.digivalle.sentinel.models.EmployeeDocumentLog;
 import com.digivalle.sentinel.services.EmployeeDocumentLogService;
@@ -33,6 +33,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -40,14 +41,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 /**
  *
  * @author Waldir.Valle
  */
 @RestController
-@RequestMapping("employee/document")
+@RequestMapping("employeeDocument")
 
 public class EmployeeDocumentController {
     
@@ -73,13 +73,13 @@ public class EmployeeDocumentController {
         @RequestParam(value = "page", required = false, defaultValue = "0") @Parameter(description="Page to retrieve") Integer page,
         @RequestParam(value = "pageSize", required = false, defaultValue = "10")  @Parameter(description="Page size to retrieve") Integer pageSize) throws BadRequestException, EntityNotExistentException, NoAccessGrantedException  {
         try {
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_ACCESS);
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(employeeDocumentService.getEmployeeDocument(employeeDocument,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -93,12 +93,12 @@ public class EmployeeDocumentController {
                                                      @PathVariable(value = "id") @Parameter(description="EmployeeDocument Id - UUID") UUID employeeDocumentId) throws EntityNotExistentException, BadRequestException, NoAccessGrantedException  {
        
         try{
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_ACCESS);
             }
             return employeeDocumentService.getById(employeeDocumentId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -110,26 +110,20 @@ public class EmployeeDocumentController {
     })
     @RequestMapping(method = RequestMethod.POST)
     public ResponseEntity<EmployeeDocument> createEmployeeDocument(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
-            @RequestParam(value = "file", required = true) @Parameter(description="File to create") MultipartFile file,
-            @RequestParam(value = "employeeId", required = true) @Parameter(description="EmployeeId to relate the created Document") UUID employeeId,
-            @RequestParam(value = "name", required = true) @Parameter(description="Name of the Document to create") String name,
-            @RequestParam(value = "description", required = false) @Parameter(description="Description of the Document to create") String description) throws BusinessLogicException, ExistentEntityException, BadRequestException, EntityNotExistentException, NoAccessGrantedException {
+            @Valid @RequestBody(required = true) @Parameter(description="EmployeeDocument object - json") EmployeeDocument employeeDocument) throws BusinessLogicException, ExistentEntityException, BadRequestException, EntityNotExistentException, NoAccessGrantedException, IOException {
         try{
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_CREATE)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_CREATE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_CREATE);
             }
-            Employee employee = new Employee();
-            employee.setId(employeeId);
-            EmployeeDocument employeeDocument = new EmployeeDocument(employee, name, description, file.getOriginalFilename(), file.getBytes());
-            employeeDocument.setUpdateUser(securityService.getUserByToken(token).getName());
+            if(employeeDocument.getUpdateUser()==null){
+                employeeDocument.setUpdateUser(securityService.getUserByToken(token).getEmail());
+            }
             return new ResponseEntity<>(employeeDocumentService.createEmployeeDocument(employeeDocument), HttpStatus.CREATED);
-        } catch (IOException ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException | IOException ex) {
+            throw ex;
         } 
         
     }
-    
-    
     
     @Operation(summary = "Update EmployeeDocument", description = "This service updates a persited EmployeeDocument Object", tags = { "employeeDocument" })
     @ApiResponses(value = {
@@ -138,28 +132,18 @@ public class EmployeeDocumentController {
     })
     @RequestMapping(value = "/{id}", method = RequestMethod.PATCH)
     public ResponseEntity<EmployeeDocument> updateEmployeeDocument(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
-            @PathVariable(value = "id") @Parameter(description="EmployeeDocument Id - UUID") UUID employeeDocumentId,
-            @RequestParam(value = "file", required = true) @Parameter(description="File to create") MultipartFile file,
-            @RequestParam(value = "employeeId", required = true) @Parameter(description="EmployeeId to relate the created Document") UUID employeeId,
-            @RequestParam(value = "name", required = true) @Parameter(description="Name of the Document to create") String name,
-            @RequestParam(value = "description", required = false) @Parameter(description="Description of the Document to create") String description,
-            @RequestParam(value = "active", required = false) @Parameter(description="active value for Document") Boolean active) throws BusinessLogicException, BadRequestException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
+                                                 @PathVariable(value = "id") @Parameter(description="EmployeeDocument Id - UUID") UUID employeeDocumentId,
+                                                 @Valid @RequestBody(required = true) @Parameter(description="EmployeeDocument object - json") EmployeeDocument employeeDocument, BindingResult bindingResult) throws BusinessLogicException, BadRequestException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
         try{
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_UPDATE)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_UPDATE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_UPDATE);
             }
-            Employee employee = new Employee();
-            employee.setId(employeeId);
-            EmployeeDocument employeeDocument = new EmployeeDocument(employee, name, description, file.getOriginalFilename(), file.getBytes());
-            employeeDocument.setUpdateUser(securityService.getUserByToken(token).getName());
-            if(active==null){
-                active=Boolean.TRUE;
+            if(employeeDocument.getUpdateUser()==null){
+                employeeDocument.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
-            employeeDocument.setActive(active);
             return new ResponseEntity<>(employeeDocumentService.updateEmployeeDocument(employeeDocumentId, employeeDocument), HttpStatus.OK);
-        }catch (IOException ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -173,18 +157,18 @@ public class EmployeeDocumentController {
     @RequestMapping(value = "/{id}", method = RequestMethod.DELETE)
     public ResponseEntity<Boolean> deleteEmployeeDocument(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
                                                  @PathVariable(value = "id") @Parameter(description="EmployeeDocument Id - UUID") UUID employeeDocumentId,
-                                                 @RequestParam(value = "updateUser", required = false) @Parameter(description="name of update User") String updateUser) throws Exception, BusinessLogicException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
+                                                 @RequestParam(value = "updateUser") @Parameter(description="name of update User") String updateUser) throws Exception, BusinessLogicException, EntityNotExistentException, ExistentEntityException, NoAccessGrantedException {
         try{
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_DELETE)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_DELETE)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser=securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             employeeDocumentService.deleteEmployeeDocument(employeeDocumentId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -199,13 +183,13 @@ public class EmployeeDocumentController {
         @RequestParam(value = "page", required = false, defaultValue = "0") @Parameter(description="Page to retrieve") Integer page,
         @RequestParam(value = "pageSize", required = false, defaultValue = "10") @Parameter(description="Page size to retrieve") Integer pageSize) throws BadRequestException, EntityNotExistentException, NoAccessGrantedException  {
         try {
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_ACCESS);
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(employeeDocumentLogService.getEmployeeDocumentLog(employeeDocumentLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -218,12 +202,12 @@ public class EmployeeDocumentController {
     public EmployeeDocumentLog getLogById(@RequestHeader(value = "token", required = true) @Parameter(description="Sentinel Control Token - UUID") String token,
                                                      @PathVariable(value = "id") @Parameter(description="EmployeeDocument Id - UUID") UUID employeeDocumentLogId) throws Exception, EntityNotExistentException, NoAccessGrantedException {
         try {
-            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_APPLICATIONS, Definitions.GRANT_ACCESS)){
-                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
+            if(!securityService.getGrantAndModule(token, Definitions.MODULE_SENTINEL_EMPLOYEES, Definitions.GRANT_ACCESS)){
+                throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_EMPLOYEES,Definitions.GRANT_ACCESS);
             }
             return employeeDocumentLogService.getById(employeeDocumentLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

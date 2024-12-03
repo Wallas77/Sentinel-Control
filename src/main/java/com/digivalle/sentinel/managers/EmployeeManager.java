@@ -20,6 +20,7 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,9 +91,39 @@ public class EmployeeManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
         if(filter.getSerial()!=null){
@@ -129,7 +160,9 @@ public class EmployeeManager {
             }
         }
         
-        
+        if(filter.getEmployeeGender()!=null){
+            predicates.add(cb.equal(root.get("employeeGender"), filter.getEmployeeGender()));
+        }
         if(filter.getEmail()!=null){
             predicates.add(cb.like(cb.lower(root.get("email")), "%" + filter.getEmail().toLowerCase()+ "%"));
         }
@@ -206,6 +239,14 @@ public class EmployeeManager {
         if(filter.getEndContractDate()!=null && filter.getEndContractDate2()!=null){
             predicates.add(cb.between(root.get("endContractDate"), filter.getEndContractDate(),filter.getEndContractDate2()));
         }
+        if(filter.getUser()!=null){
+            if(filter.getUser().getId()!=null){
+                predicates.add(cb.equal(root.get("user").get("id"), filter.getUser().getId()));
+            }
+            if(filter.getUser().getEmail()!=null){
+                predicates.add(cb.like(cb.lower(root.get("user").get("email")), "%" + filter.getUser().getEmail().toLowerCase()+ "%"));
+            }
+        }
 
         return predicates;
     }
@@ -260,20 +301,32 @@ public class EmployeeManager {
             throw new BusinessLogicException("El campo FirstSurname es requerido para el objeto Employee");
         } else if (StringUtils.isEmpty(employee.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto Employee");
+        } else if (employee.getEmployeeGender()==null) {
+            throw new BusinessLogicException("El campo EmployeeGender es requerido para el objeto Employee");
         } 
     }
     
     private void validateUnique(Employee employee) throws ExistentEntityException {
-        List<Employee> employeees = employeeRepository.findByName(employee.getName());
-        if (employeees!=null && !employeees.isEmpty()) {
-            throw new ExistentEntityException(Employee.class,"name="+employee.getName());
+        List<Employee> employees = employeeRepository.findByCode(employee.getCode());
+        if (employees!=null && !employees.isEmpty()) {
+            if(employee.getId()==null){
+                throw new ExistentEntityException(Employee.class,"name="+employee.getCode());
+            } else {
+                for(Employee employeePersisted: employees){
+                    if(!employeePersisted.getId().equals(employee.getId())){
+                        throw new ExistentEntityException(Employee.class,"code="+employee.getCode());
+                    }
+                }
+            }
         } 
+        
     }
 
-    public Employee updateEmployee(UUID employeeId, Employee employee) throws EntityNotExistentException, BusinessLogicException {
+    public Employee updateEmployee(UUID employeeId, Employee employee) throws EntityNotExistentException, BusinessLogicException, ExistentEntityException {
         if (StringUtils.isEmpty(employee.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto Employee");
         } 
+        validateUnique(employee);
     
         Employee persistedEmployee = getById(employeeId);
         if (persistedEmployee != null) {
@@ -331,6 +384,9 @@ public class EmployeeManager {
             if(employee.getNationality()!=null){
                 persistedEmployee.setNationality(employee.getNationality());
             }
+            if(employee.getPhotoFormat()!=null){
+                persistedEmployee.setPhotoFormat(employee.getPhotoFormat());
+            }
             if(employee.getPhoto()!=null){
                 persistedEmployee.setPhoto(employee.getPhoto());
             }
@@ -370,6 +426,12 @@ public class EmployeeManager {
             }
             if(employee.getEndContractDate()!=null){
                 persistedEmployee.setEndContractDate(employee.getEndContractDate());
+            }
+            if(employee.getEmployeeGender()!=null){
+                persistedEmployee.setEmployeeGender(employee.getEmployeeGender());
+            }
+            if(employee.getUser()!=null){
+                persistedEmployee.setUser(employee.getUser());
             }
             persistedEmployee.setUpdateUser(employee.getUpdateUser());
             return employeeRepository.save(persistedEmployee);

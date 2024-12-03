@@ -11,15 +11,20 @@ import com.digivalle.sentinel.exceptions.BusinessLogicException;
 import com.digivalle.sentinel.exceptions.EntityNotExistentException;
 import com.digivalle.sentinel.exceptions.ExistentEntityException;
 import com.digivalle.sentinel.models.Activity;
+import com.digivalle.sentinel.models.enums.ActivityStatusEnum;
 import com.digivalle.sentinel.repositories.ActivityRepository;
+import com.digivalle.sentinel.utils.ObjectUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,14 +95,61 @@ public class ActivityManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
-        if(filter.getSerial()!=null){
-            predicates.add(cb.equal(root.get("serial"), filter.getSerial()));
+        
+        if(filter.getActivityDate()!=null && filter.getActivityDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getActivityDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setActivityDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getActivityDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setActivityDate2(cal.getTime());
+            predicates.add(cb.between(root.get("activityDate"), filter.getActivityDate(),filter.getActivityDate2()));
         }
+        
         if(filter.getName()!=null){
             predicates.add(cb.like(cb.lower(root.get("name")), "%" + filter.getName().toLowerCase()+ "%"));
         }
@@ -127,12 +179,33 @@ public class ActivityManager {
                 predicates.add(cb.like(cb.lower(root.get("roleResponsability").get("name")), "%" + filter.getRoleResponsability().getName().toLowerCase()+ "%"));
             }
         }
-        if(filter.getEmployee()!=null){
-            if(filter.getEmployee().getId()!=null){
+        if (filter.getEmployee() != null) {
+            if (filter.getEmployee().getId() != null) {
                 predicates.add(cb.equal(root.get("employee").get("id"), filter.getEmployee().getId()));
             }
-            if(filter.getEmployee().getName()!=null){
-                predicates.add(cb.like(cb.lower(root.get("employee").get("name")), "%" + filter.getEmployee().getName().toLowerCase()+ "%"));
+            if (filter.getEmployee().getName() != null) {
+                predicates.add(cb.like(cb.lower(root.get("employee").get("name")), "%" + filter.getEmployee().getName().toLowerCase() + "%"));
+            }
+            if (filter.getEmployee().getFirstSurname() != null) {
+                predicates.add(cb.like(cb.lower(root.get("employee").get("firstSurname")), "%" + filter.getEmployee().getFirstSurname().toLowerCase() + "%"));
+            }
+            /*if (filter.getEmployee().getUser() != null) {
+                Join<Object, Object> userJoin = root.join("employee").join("user"); // Realizar un JOIN explícito
+
+                if (filter.getEmployee().getUser().getId() != null) {
+                    predicates.add(cb.equal(userJoin.get("id"), filter.getEmployee().getUser().getId()));
+                }
+                if (filter.getEmployee().getUser().getEmail() != null) {
+                    predicates.add(cb.like(cb.lower(userJoin.get("email")), "%" + filter.getEmployee().getUser().getEmail().toLowerCase() + "%"));
+                }
+            }*/
+            if (filter.getEmployee().getUser() != null) {
+                if (filter.getEmployee().getUser().getId() != null) {
+                    predicates.add(cb.equal(root.get("employee").get("user").get("id"), filter.getEmployee().getUser().getId()));
+                }
+                if (filter.getEmployee().getUser().getEmail() != null) {
+                    predicates.add(cb.like(cb.lower(root.get("employee").get("user").get("email")), "%" + filter.getEmployee().getUser().getEmail().toLowerCase() + "%"));
+                }
             }
         }
         if(filter.getEmployeeBonus()!=null){
@@ -155,7 +228,22 @@ public class ActivityManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
-
+        if(filter.getServiceAssignment()!=null){
+            if(filter.getServiceAttendance().getId()!=null){
+                predicates.add(cb.equal(root.get("serviceAssignment").get("id"), filter.getServiceAssignment().getId()));
+            }
+        }
+        if(filter.getServiceAttendance()!=null){
+            if(filter.getServiceAttendance().getId()!=null){
+                predicates.add(cb.equal(root.get("serviceAttendance").get("id"), filter.getServiceAttendance().getId()));
+            }
+        }
+        if(filter.getExactTime()!=null){
+            predicates.add(cb.equal(root.get("exactTime"), filter.getExactTime()));
+        }
+        if(filter.getActivityStatus()!=null){
+            predicates.add(cb.equal(root.get("activityStatus"), filter.getActivityStatus()));
+        }
         return predicates;
     }
 
@@ -189,6 +277,7 @@ public class ActivityManager {
     public Activity createActivity(Activity activity) throws BusinessLogicException, ExistentEntityException {
         validateActivity(activity);
         validateUnique(activity);
+        System.out.println("activity.getActivityDate()=>"+activity.getActivityDate());
         return activityRepository.save(activity);
     }
 
@@ -203,9 +292,9 @@ public class ActivityManager {
     }
     
     private void validateUnique(Activity activity) throws ExistentEntityException {
-        List<Activity> activityes = activityRepository.findByName(activity.getName());
+        List<Activity> activityes = activityRepository.findFiltered(activity.getEmployee().getId(),activity.getActivityDate(),activity.getActivityDate(),Boolean.TRUE, Boolean.FALSE, activity.getRoleResponsability().getId());
         if (activityes!=null && !activityes.isEmpty()) {
-            throw new ExistentEntityException(Activity.class,"name="+activity.getName());
+            throw new ExistentEntityException(Activity.class,"Employee="+activity.getEmployee().getCode()+" "+activity.getEmployee().getName()+" "+activity.getEmployee().getFirstSurname()+" ,ActivityDate="+activity.getActivityDate());
         } 
     }
 
@@ -225,15 +314,15 @@ public class ActivityManager {
             if(activity.getActivityDate()!=null){
                 persistedActivity.setActivityDate(activity.getActivityDate());
             }
-            if(activity.getStartDate()!=null){
+            /*if(activity.getStartDate()!=null){
                 persistedActivity.setStartDate(activity.getStartDate());
-            }
-            if(activity.getEndDate()!=null){
+            }*/
+            /*if(activity.getEndDate()!=null){
                 persistedActivity.setEndDate(activity.getEndDate());
-            }
-            if(activity.getCanceledDate()!=null){
+            }*/
+            /*if(activity.getCanceledDate()!=null){
                 persistedActivity.setCanceledDate(activity.getCanceledDate());
-            }
+            }*/
             if(activity.getRequiredFiles()!=null){
                 persistedActivity.setRequiredFiles(activity.getRequiredFiles());
             }
@@ -253,6 +342,31 @@ public class ActivityManager {
             if(activity.getActive()!=null){
                 persistedActivity.setActive(activity.getActive());
             }
+            if(activity.getServiceAssignment()!=null){
+                persistedActivity.setServiceAssignment(activity.getServiceAssignment());
+            }
+            if(activity.getServiceAttendance()!=null){
+                persistedActivity.setServiceAttendance(activity.getServiceAttendance());
+            }
+            if(activity.getExactTime()!=null){
+                persistedActivity.setExactTime(activity.getExactTime());
+            }
+            if(activity.getActivityStatus()!=null){
+                persistedActivity.setActivityStatus(activity.getActivityStatus());
+                if(activity.getActivityStatus().equals(ActivityStatusEnum.INICIADA) && persistedActivity.getStartDate()==null){
+                    if(activity.getActivityDate()!=null && ObjectUtils.areDatesDifferent(activity.getActivityDate(), new Date())){
+                        throw new BusinessLogicException("No se puede iniciar la actividad porque hoy no es la fecha programada");
+                    }
+                    persistedActivity.setStartDate(new Date());
+                } else if(activity.getActivityStatus().equals(ActivityStatusEnum.COMPLETADA) && persistedActivity.getEndDate()==null){
+                    if(persistedActivity.getStartDate()==null){
+                        throw new BusinessLogicException("Es necesario iniciar la actividad antes de completarla");
+                    }
+                    persistedActivity.setEndDate(new Date());
+                } else if(activity.getActivityStatus().equals(ActivityStatusEnum.CANCELADA) && persistedActivity.getCanceledDate()==null){
+                    persistedActivity.setCanceledDate(new Date());
+                }
+            }
             persistedActivity.setUpdateUser(activity.getUpdateUser());
             return activityRepository.save(persistedActivity);
         } else {
@@ -268,6 +382,22 @@ public class ActivityManager {
         activity.setDeleted(Boolean.TRUE);
         activity.setActive(Boolean.FALSE);
         return activityRepository.save(activity);
+    }
+    
+    public void deleteByRoleResponsabilityIdAndEmployeeId(UUID roleResponsabilityId, UUID employeeId){
+        activityRepository.deleteByRoleResponsabilityIdAndEmployeeId(roleResponsabilityId, employeeId);
+    }
+    
+    public void deleteByServiceAttendanceIdAndEmployeeId(UUID serviceAttendanceId, UUID employeeId){
+        activityRepository.deleteByServiceAttendanceIdAndEmployeeId(serviceAttendanceId, employeeId);
+    }
+    
+    public void deleteByServiceAssignmentId(UUID serviceAssignmentId){
+        activityRepository.deleteByServiceAssignmentId(serviceAssignmentId);
+    }
+    
+    public void deleteByServiceAssignmentIdAndEmployeeId(UUID serviceAssignmentId, UUID employeeId){
+        activityRepository.deleteByServiceAssignmentIdAndEmployeeId(serviceAssignmentId, employeeId);
     }
 
     public List<Activity> findAll(){
@@ -286,7 +416,12 @@ public class ActivityManager {
         return activityRepository.findByNameIgnoreCaseContainingAndDeleted(name,deleted);
     }
     
-    public Activity getBySerial(Integer serial) {
-        return activityRepository.getBySerial(serial);
+    
+    public List<Activity> findFiltered(UUID employeeId, Date activityDate, Date activityDate2, Boolean active,Boolean deleted,UUID roleResponsabilityId){
+        return activityRepository.findFiltered(employeeId,activityDate,activityDate2,active,deleted,roleResponsabilityId);
+    }
+    
+    public List<Activity> findFilteredServiceAssignment(UUID serviceAssignmentId, UUID employeeId, Date activityDate, Date activityDate2, Boolean active,Boolean deleted,UUID roleResponsabilityId){
+        return activityRepository.findFilteredServiceAssignment(serviceAssignmentId,employeeId,activityDate,activityDate2,active,deleted,roleResponsabilityId);
     }
 }

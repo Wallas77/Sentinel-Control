@@ -74,8 +74,8 @@ public class GrantController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(grantService.getGrant(grant,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -93,8 +93,8 @@ public class GrantController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_GRANTS,Definitions.GRANT_ACCESS);
             }
             return grantService.getById(grantId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -112,11 +112,11 @@ public class GrantController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_GRANTS,Definitions.GRANT_CREATE);
             }
             if(grant.getUpdateUser()==null){
-                grant.setUpdateUser(securityService.getUserByToken(token).getName());
+                grant.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(grantService.createGrant(grant), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -135,12 +135,11 @@ public class GrantController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_GRANTS,Definitions.GRANT_UPDATE);
             }
             if(grant.getUpdateUser()==null){
-                grant.setUpdateUser(securityService.getUserByToken(token).getName());
+                grant.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(grantService.updateGrant(grantId, grant), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
-            //throw ble;
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         }
         
  
@@ -160,12 +159,12 @@ public class GrantController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_GRANTS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser =securityService.getUserByToken(token).getName();
+                updateUser =securityService.getUserByToken(token).getEmail();
             }
             grantService.deleteGrant(grantId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -185,8 +184,8 @@ public class GrantController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(grantLogService.getGrantLog(grantLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -203,8 +202,8 @@ public class GrantController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_GRANTS,Definitions.GRANT_ACCESS);
             }
             return grantLogService.getById(grantLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

@@ -40,6 +40,8 @@ public class EmployeeDocumentLog extends BaseEntity{
     private String fileName;
     @Column(name = "FILE")
     private byte[] file;
+    @Column(name = "FILE_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String fileFormat;
     
     private UUID employeeDocumentId;
     private UUID transactionId;

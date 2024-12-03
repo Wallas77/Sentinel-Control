@@ -110,6 +110,9 @@ public class BranchLogManager {
             }
         }
         if(filter.getCustomer()!=null){
+            if(filter.getCustomer().getId()!=null){
+                predicates.add(cb.equal(root.get("customer").get("id"), filter.getCustomer().getId()));
+            }
             if(filter.getCustomer().getName()!=null){
                 predicates.add(cb.like(cb.lower(root.get("customer").get("name")), "%" + filter.getCustomer().getName().toLowerCase()+ "%"));
             }

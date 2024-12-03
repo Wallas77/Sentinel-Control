@@ -10,6 +10,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,9 +37,18 @@ public class ToolLog extends BaseEntity{
     private String name;
     @Column(name = "DESCRIPTION")
     private String description;
+    @ManyToOne
+    @JoinColumn(name = "EMPLOYEE_ID", nullable = true)
+    private Employee employee;
+    @Column(name = "COST_AMOUNT")
+    private Double costAmount;
+    @Transient
+    private Double costAmount2;
+    
     private UUID toolId;
     private UUID transactionId;
     private String action;
     private Boolean activeObject;
+    
 
 }

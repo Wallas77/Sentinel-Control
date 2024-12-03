@@ -27,12 +27,19 @@ import lombok.NoArgsConstructor;
  * @author Waldir.Valle
  */
 @Entity
-@Table(name = "ACTIVITIES", indexes = @Index(columnList = "name"))
+@Table(name = "ACTIVITIES", indexes = @Index(columnList = "name, employee_id, service_id, service_assignment_id, service_attendance_id"))
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=false)
-public class Activity extends BaseSerializedEntity{
+public class Activity extends BaseEntity{
+    
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_ASSIGNMENT_ID", nullable = false)
+    private ServiceAssignment serviceAssignment;
+    @ManyToOne
+    @JoinColumn(name = "SERVICE_ATTENDANCE_ID", nullable = false)
+    private ServiceAttendance serviceAttendance;
     @ManyToOne
     @JoinColumn(name = "SERVICE_ID", nullable = false)
     private Service service;
@@ -44,6 +51,8 @@ public class Activity extends BaseSerializedEntity{
     private Date activityDate;
     @Transient
     private Date activityDate2;
+    @Column(name = "EXACT_TIME")
+    private Boolean exactTime;
     @Column(name = "START_DATE", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date startDate;
     @Transient

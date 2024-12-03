@@ -10,6 +10,7 @@ import com.digivalle.sentinel.containers.Paging;
 import com.digivalle.sentinel.exceptions.BusinessLogicException;
 import com.digivalle.sentinel.exceptions.EntityNotExistentException;
 import com.digivalle.sentinel.exceptions.ExistentEntityException;
+import com.digivalle.sentinel.models.Service;
 import com.digivalle.sentinel.models.ServiceAssignment;
 import com.digivalle.sentinel.repositories.ServiceAssignmentRepository;
 import jakarta.persistence.EntityManager;
@@ -19,7 +20,10 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -90,9 +94,39 @@ public class ServiceAssignmentManager {
         List<Predicate> predicates = new ArrayList<>();
 
         if(filter.getCreationDate()!=null && filter.getCreationDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setCreationDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getCreationDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setCreationDate2(cal.getTime());
             predicates.add(cb.between(root.get("creationDate"), filter.getCreationDate(),filter.getCreationDate2()));
         }
         if(filter.getUpdateDate()!=null && filter.getUpdateDate2()!=null){
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate());
+            cal.set(Calendar.HOUR_OF_DAY, 0);
+            cal.set(Calendar.MINUTE, 0);
+            cal.set(Calendar.SECOND, 0);
+            cal.set(Calendar.MILLISECOND, 0);
+            filter.setUpdateDate(cal.getTime());
+            
+            cal = Calendar.getInstance();
+            cal.setTime(filter.getUpdateDate2());
+            cal.set(Calendar.HOUR_OF_DAY, 23);
+            cal.set(Calendar.MINUTE, 59);
+            cal.set(Calendar.SECOND, 59);
+            cal.set(Calendar.MILLISECOND, 999);
+            filter.setUpdateDate2(cal.getTime());
             predicates.add(cb.between(root.get("updateDate"), filter.getUpdateDate(),filter.getUpdateDate2()));
         }
         if(filter.getSerial()!=null){
@@ -161,6 +195,9 @@ public class ServiceAssignmentManager {
         if(filter.getUpdateUser()!=null){
             predicates.add(cb.equal(root.get("updateUser"), filter.getUpdateUser()));
         }
+        if(filter.getEntryTime()!=null){
+            predicates.add(cb.equal(root.get("entryTime"), filter.getEntryTime()));
+        }
 
         return predicates;
     }
@@ -193,7 +230,12 @@ public class ServiceAssignmentManager {
     
     public ServiceAssignment createServiceAssignment(ServiceAssignment serviceAssignment) throws BusinessLogicException, ExistentEntityException {
         validateServiceAssignment(serviceAssignment);
-        validateUnique(serviceAssignment);
+        if(serviceAssignment.getEmployee()!=null && serviceAssignment.getEmployee().getId()==null){
+            serviceAssignment.setEmployee(null);
+        } else {
+            validateUnique(serviceAssignment);
+        }
+        
         return serviceAssignmentRepository.save(serviceAssignment);
     }
 
@@ -208,21 +250,48 @@ public class ServiceAssignmentManager {
     }
     
     private void validateUnique(ServiceAssignment serviceAssignment) throws ExistentEntityException {
-        List<ServiceAssignment> serviceAssignmentes = serviceAssignmentRepository.getByServiceAndRoleAndEmployeeAndActiveAndDeleted(serviceAssignment.getService(), serviceAssignment.getRole(), serviceAssignment.getEmployee(), Boolean.TRUE, Boolean.FALSE);
-        if (serviceAssignmentes!=null && !serviceAssignmentes.isEmpty()) {
-            throw new ExistentEntityException(ServiceAssignment.class,"service="+serviceAssignment.getService().getName()+" role="+serviceAssignment.getRole().getName()+" employee="+serviceAssignment.getEmployee().getName());
-        } 
+        if(serviceAssignment.getEmployee()!=null && serviceAssignment.getEmployee().getId()!=null){
+            List<ServiceAssignment> serviceAssignmentes = serviceAssignmentRepository.getByServiceAndRoleAndEmployeeAndActiveAndDeleted(serviceAssignment.getService(), serviceAssignment.getRole(), serviceAssignment.getEmployee(), Boolean.TRUE, Boolean.FALSE);
+            if (serviceAssignmentes!=null && !serviceAssignmentes.isEmpty()) {
+                if(serviceAssignment.getId()==null){
+                    throw new ExistentEntityException(ServiceAssignment.class,
+                            "service="+serviceAssignment.getService().getName()+
+                                    " role="+serviceAssignment.getRole().getName()+
+                                    " employee="+serviceAssignment.getEmployee().getName()+
+                                    " "+serviceAssignment.getEmployee().getFirstSurname() +
+                                    " "+serviceAssignment.getEmployee().getSecondSurname());
+                } else {
+                    // Si el ID no es nulo, validamos si no coincide con ningún ID de la lista
+                    boolean idDifferent = serviceAssignmentes.stream()
+                        .anyMatch(existingAssignment -> !existingAssignment.getId().equals(serviceAssignment.getId()));
+
+                    if (idDifferent) {
+                        // Si no coincide con ningún ID, lanzamos la excepción
+                        throw new ExistentEntityException(ServiceAssignment.class, 
+                            "service=" + serviceAssignment.getService().getName() + 
+                            " role=" + serviceAssignment.getRole().getName() + 
+                            " employee=" + serviceAssignment.getEmployee().getName() + 
+                            " " + serviceAssignment.getEmployee().getFirstSurname() + 
+                            " " + serviceAssignment.getEmployee().getSecondSurname()
+                        );
+                    }
+
+                }
+            }
+        }
     }
 
-    public ServiceAssignment updateServiceAssignment(UUID serviceAssignmentId, ServiceAssignment serviceAssignment) throws EntityNotExistentException, BusinessLogicException {
+    public ServiceAssignment updateServiceAssignment(UUID serviceAssignmentId, ServiceAssignment serviceAssignment) throws EntityNotExistentException, BusinessLogicException, ExistentEntityException {
         if (StringUtils.isEmpty(serviceAssignment.getUpdateUser())) {
             throw new BusinessLogicException("El campo UpdateUser es requerido para el objeto ServiceAssignment");
         } 
-    
+        validateUnique(serviceAssignment);
         ServiceAssignment persistedServiceAssignment = getById(serviceAssignmentId);
         if (persistedServiceAssignment != null) {
-            if(serviceAssignment.getEmployee()!=null){
+            if(serviceAssignment.getEmployee()!=null && serviceAssignment.getEmployee().getId()!=null){
                 persistedServiceAssignment.setEmployee(serviceAssignment.getEmployee());
+            } else {
+                persistedServiceAssignment.setEmployee(null);
             }
             if(serviceAssignment.getRole()!=null){
                 persistedServiceAssignment.setRole(serviceAssignment.getRole());
@@ -254,6 +323,9 @@ public class ServiceAssignmentManager {
             if(serviceAssignment.getActive()!=null){
                 persistedServiceAssignment.setActive(serviceAssignment.getActive());
             }
+            if(serviceAssignment.getEntryTime()!=null){
+                persistedServiceAssignment.setEntryTime(serviceAssignment.getEntryTime());
+            }
             persistedServiceAssignment.setUpdateUser(serviceAssignment.getUpdateUser());
             return serviceAssignmentRepository.save(persistedServiceAssignment);
         } else {
@@ -277,5 +349,9 @@ public class ServiceAssignmentManager {
     
     public ServiceAssignment getBySerial(Integer serial) {
         return serviceAssignmentRepository.getBySerial(serial);
+    }
+    
+    public List<ServiceAssignment> getByService_IdAndActiveAndDeleted(UUID serviceId, Boolean active, Boolean deleted){
+        return serviceAssignmentRepository.getByService_IdAndActiveAndDeleted(serviceId, active, deleted);
     }
 }

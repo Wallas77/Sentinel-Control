@@ -77,8 +77,8 @@ public class AccessControlController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(accessControlService.getAccessControl(accessControl,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -96,8 +96,8 @@ public class AccessControlController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return accessControlService.getById(accessControlId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -115,11 +115,11 @@ public class AccessControlController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_CREATE);
             }
             if(accessControl.getUpdateUser()==null){
-                accessControl.setUpdateUser(securityService.getUserByToken(token).getName());
+                accessControl.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(accessControlService.createAccessControl(accessControl), HttpStatus.CREATED);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ex) {
+            throw ex;
         } 
         
     }
@@ -138,11 +138,11 @@ public class AccessControlController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_UPDATE);
             }
             if(accessControl.getUpdateUser()==null){
-                accessControl.setUpdateUser(securityService.getUserByToken(token).getName());
+                accessControl.setUpdateUser(securityService.getUserByToken(token).getEmail());
             }
             return new ResponseEntity<>(accessControlService.updateAccessControl(accessControlId, accessControl), HttpStatus.OK);
-        }catch (Exception ble) {
-            throw new BadRequestException(ble.getMessage());
+        }catch (BusinessLogicException | EntityNotExistentException | ExistentEntityException | NoAccessGrantedException ble) {
+            throw ble;
             //throw ble;
         }
         
@@ -163,12 +163,12 @@ public class AccessControlController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_DELETE);
             }
             if(updateUser==null){
-                updateUser = securityService.getUserByToken(token).getName();
+                updateUser = securityService.getUserByToken(token).getEmail();
             }
             accessControlService.deleteAccessControl(accessControlId,updateUser);
             return new ResponseEntity<>(HttpStatus.ACCEPTED);
         } catch (RuntimeException ex){
-            throw new BadRequestException(ex.getMessage());
+            throw ex;
         } 
     }
     
@@ -188,8 +188,8 @@ public class AccessControlController {
             }
             Paging paging = new Paging(page, pageSize);
             return new ResponseEntity<>(accessControlLogService.getAccessControlLog(accessControlLog,paging), HttpStatus.OK);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }
     }
     
@@ -206,8 +206,8 @@ public class AccessControlController {
                 throw new NoAccessGrantedException(Definitions.MODULE_SENTINEL_APPLICATIONS,Definitions.GRANT_ACCESS);
             }
             return accessControlLogService.getById(accessControlLogId);
-        } catch (Exception ex) {
-            throw new BadRequestException(ex.getMessage());
+        } catch (EntityNotExistentException | NoAccessGrantedException ex) {
+            throw ex;
         }  
     }
 

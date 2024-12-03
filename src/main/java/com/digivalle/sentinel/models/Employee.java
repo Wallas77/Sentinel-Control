@@ -7,6 +7,7 @@ package com.digivalle.sentinel.models;
 
 import com.digivalle.sentinel.models.enums.BloodTypeEnum;
 import com.digivalle.sentinel.models.enums.BodyComplexionEnum;
+import com.digivalle.sentinel.models.enums.EmployeeGenderEnum;
 import com.digivalle.sentinel.models.enums.EyeColorEnum;
 import com.digivalle.sentinel.models.enums.HairColorEnum;
 import com.digivalle.sentinel.models.enums.SkinColorEnum;
@@ -45,12 +46,17 @@ public class Employee extends BaseSerializedEntity{
     private String firstSurname;
     @Column(name = "SECOND_SURNAME", columnDefinition = "VARCHAR(150)")
     private String secondSurname;
+    @Column(name = "PHOTO_FORMAT", columnDefinition = "VARCHAR(100)")
+    private String photoFormat;
     @Column(name = "PHOTO")
     private byte[] photo;
     @Column(name = "BIRTHDAY", columnDefinition= "TIMESTAMP WITH TIME ZONE")
     private Date birthday;
     @Column(name = "NATIONALITY", columnDefinition = "VARCHAR(50)")
     private String nationality;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "EMPLOYEE_GENDER", columnDefinition = "VARCHAR(50)")
+    private EmployeeGenderEnum employeeGender;
     @Column(name = "HEIGHT")
     private Double height;
     @Transient
@@ -113,6 +119,12 @@ public class Employee extends BaseSerializedEntity{
     private Date endContractDate;
     @Transient
     private Date endContractDate2;
+    
+    @ManyToOne
+    @JoinColumn(name = "USER_ID", nullable = true)
+    private User user;
+    
+    
     
 
 }

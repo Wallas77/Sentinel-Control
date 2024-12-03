@@ -157,6 +157,14 @@ public class ProfileService {
                 }
                 profile = createProfile(profile);
                 
+                profile = new Profile();
+                profile.setName(Definitions.PROFILE_EMPLOYEE_SENTINEL);
+                profile.setUpdateUser(Definitions.USER_DEFAULT);
+                profile.setProfileModuleGrant(new ArrayList<>());
+
+                profile = createProfile(profile);
+                
+                
                 logger.info("Las Profiles no existen, inicialización ejecutada");
             } else {
                 throw new BusinessLogicException("No se encontro la aplicación: "+Definitions.APPLICATION_SENTINEL);
